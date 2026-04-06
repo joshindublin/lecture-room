@@ -791,6 +791,7 @@
             /* 접근 코드 (대소문자 구분) */
             ACCESS_CODE: "LECTURE2026",
 
+
             /* 강의 목록
                driveFileId: 구글 드라이브 파일 URL에서 /d/ 뒤의 ID를 복사해 넣으세요
                예) https://drive.google.com/file/d/1aBcD.../view  →  "1aBcD..."
@@ -930,15 +931,6 @@
             localStorage.setItem(LS_KEY, JSON.stringify(watched));
         }
 
-        function updateProgressBar() {
-            const total = CONFIG.lectures.length;
-            const done = getWatched().length;
-            const pct = Math.round((done / total) * 100);
-            document.getElementById('progressCount').textContent = `${done} / ${total} 완료`;
-            document.getElementById('progressFill').style.width = pct + '%';
-            document.getElementById('progressPct').textContent = pct + '%';
-        }
-
         function updateCompleteBtn() {
             const btn = document.getElementById('btnComplete');
             if (!btn) return;
@@ -950,9 +942,17 @@
         }
 
         function toggleWatched() {
-            const watched = isWatched(currentLectureId);
-            setWatched(currentLectureId, !watched);
+            setWatched(currentLectureId, !isWatched(currentLectureId));
             updateCompleteBtn();
+        }
+
+        function updateProgressBar() {
+            const total = CONFIG.lectures.length;
+            const done = getWatched().length;
+            const pct = Math.round((done / total) * 100);
+            document.getElementById('progressCount').textContent = `${done} / ${total} 완료`;
+            document.getElementById('progressFill').style.width = pct + '%';
+            document.getElementById('progressPct').textContent = pct + '%';
         }
 
         /* ── Auth ── */
@@ -1054,6 +1054,7 @@
 
             showPage('video');
             updateCompleteBtn();
+
         }
 
         function navigateLecture(delta) {
