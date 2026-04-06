@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<!--
+  ╔══════════════════════════════════════════════════════════════════╗
+  ║                      중요 안내사항                                  ║
+  ║  구글 드라이브 영상이 정상 재생되려면 다음 설정이 필요합니다:            ║
+  ║                                                                    ║
+  ║  1. 구글 드라이브에서 영상 파일 선택                                   ║
+  ║  2. 우클릭 → "공유" 클릭                                              ║
+  ║  3. "링크가 있는 모든 사용자" 로 권한 변경                              ║
+  ║  4. 저장 후, 파일 URL에서 FILE_ID 복사                                ║
+  ║     예: https://drive.google.com/file/d/[FILE_ID]/view              ║
+  ║  5. 아래 CONFIG 섹션의 driveFileId 에 붙여넣기                         ║
+  ╚══════════════════════════════════════════════════════════════════╝
+-->
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Lecture Room</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
+        rel="stylesheet" />
+    <style>
+        /* ── Reset & Base ── */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #1a1a2e;
+            --card: #16213e;
+            --accent: #0f3460;
+            --point: #e94560;
+            --point-dim: #c73652;
+            --text: #e8eaf0;
+            --muted: #8b92a9;
+            --border: rgba(255, 255, 255, 0.07);
+            --radius: 14px;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 3px;
+        }
+
+        /* ══════════════════════════════
+       LOCK SCREEN
+    ══════════════════════════════ */
+        #lockScreen {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity .5s ease;
+        }
+
+        #lockScreen.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .lock-box {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 56px 48px;
+            width: min(420px, 92vw);
+            box-shadow: var(--shadow), 0 0 80px rgba(233, 69, 96, 0.08);
+            text-align: center;
+            animation: slideUp .6s cubic-bezier(.16, 1, .3, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .lock-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+            filter: drop-shadow(0 0 16px rgba(233, 69, 96, 0.5));
+        }
+
+        .lock-box h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            background: linear-gradient(135deg, #fff 0%, #c0c8e0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .lock-box p {
+            color: var(--muted);
+            font-size: .9rem;
+            margin-bottom: 32px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .input-group input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 18px;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text);
+            letter-spacing: .12em;
+            text-align: center;
+            transition: border-color .25s, box-shadow .25s;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: var(--point);
+            box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.15);
+        }
+
+        .input-group input::placeholder {
+            color: var(--muted);
+            letter-spacing: .05em;
+        }
+
+        .error-msg {
+            color: var(--point);
+            font-size: .82rem;
+            margin-bottom: 14px;
+            min-height: 20px;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--point) 0%, var(--point-dim) 100%);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .2s, box-shadow .2s;
+            box-shadow: 0 4px 20px rgba(233, 69, 96, 0.35);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(233, 69, 96, 0.5);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        /* ══════════════════════════════
+       HEADER
+    ══════════════════════════════ */
+        header {
+            background: rgba(22, 33, 62, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 0 24px;
+        }
+
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2rem;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+        .logo span.dot {
+            width: 8px;
+            height: 8px;
+            background: var(--point);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px var(--point);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: .4;
+            }
+        }
+
+        .header-subtitle {
+            font-size: .75rem;
+            color: var(--muted);
+            font-weight: 400;
+        }
+
+        .btn-logout {
+            background: rgba(233, 69, 96, 0.12);
+            color: var(--point);
+            border: 1px solid rgba(233, 69, 96, 0.25);
+            border-radius: 8px;
+            padding: 7px 14px;
+            font-family: inherit;
+            font-size: .8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .2s, transform .2s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(233, 69, 96, 0.22);
+            transform: scale(1.03);
+        }
+
+        /* ══════════════════════════════
+       PAGES (SPA)
+    ══════════════════════════════ */
+        .page {
+            display: none;
+            animation: fadeIn .4s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ══════════════════════════════
+       DASHBOARD PAGE
+    ══════════════════════════════ */
+        .page-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+
+        .page-header {
+            margin-bottom: 36px;
+        }
+
+        .page-header h2 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 6px;
+        }
+
+        .page-header h2 em {
+            font-style: normal;
+            color: var(--point);
+        }
+
+        .page-header p {
+            color: var(--muted);
+            font-size: .95rem;
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(90deg, var(--point) 0%, transparent 60%);
+            border-radius: 2px;
+            margin: 18px 0 32px;
+        }
+
+        /* Grid */
+        .lectures-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        /* Card */
+        .lecture-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform .3s cubic-bezier(.16, 1, .3, 1), box-shadow .3s, border-color .3s;
+            position: relative;
+        }
+
+        .lecture-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(233, 69, 96, 0.2);
+            border-color: rgba(233, 69, 96, 0.3);
+        }
+
+        .card-thumbnail {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: linear-gradient(135deg, var(--accent) 0%, #1a1a4e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-thumbnail::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 30% 40%, rgba(233, 69, 96, 0.15) 0%, transparent 60%);
+        }
+
+        .card-num {
+            position: absolute;
+            top: 10px;
+            left: 12px;
+            background: var(--point);
+            color: #fff;
+            font-size: .72rem;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 20px;
+            letter-spacing: .04em;
+        }
+
+        .play-icon {
+            width: 56px;
+            height: 56px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            backdrop-filter: blur(4px);
+            transition: transform .3s, background .3s;
+        }
+
+        .lecture-card:hover .play-icon {
+            transform: scale(1.12);
+            background: rgba(233, 69, 96, 0.4);
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .card-desc {
+            font-size: .83rem;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .card-footer {
+            padding: 12px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: .78rem;
+            color: var(--point);
+            font-weight: 600;
+        }
+
+        /* ── Watched State ── */
+        .lecture-card.watched {
+            border-color: rgba(34, 197, 94, 0.35);
+        }
+
+        .lecture-card.watched:hover {
+            border-color: rgba(34, 197, 94, 0.6);
+            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(34, 197, 94, 0.3);
+        }
+
+        .watched-badge {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            background: rgba(34, 197, 94, 0.9);
+            color: #fff;
+            font-size: .72rem;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 20px;
+            letter-spacing: .04em;
+            backdrop-filter: blur(4px);
+        }
+
+        .card-footer.done {
+            color: #22c55e;
+        }
+
+        /* ── Progress Bar (Dashboard) ── */
+        .progress-section {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin-bottom: 32px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .progress-label {
+            font-size: .88rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .progress-count {
+            font-size: .82rem;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        .progress-bar-track {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
+            border-radius: 99px;
+            transition: width .6s cubic-bezier(.16, 1, .3, 1);
+        }
+
+        .progress-pct {
+            font-size: .78rem;
+            color: #22c55e;
+            font-weight: 700;
+            margin-top: 8px;
+            text-align: right;
+        }
+
+        /* ── Mark Complete Button ── */
+        .btn-complete {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: 1.5px solid rgba(34, 197, 94, 0.4);
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+            font-family: inherit;
+            font-size: .9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background .2s, transform .2s, border-color .2s;
+        }
+
+        .btn-complete:hover {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: rgba(34, 197, 94, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .btn-complete.done {
+            background: rgba(34, 197, 94, 0.18);
+            border-color: rgba(34, 197, 94, 0.5);
+            cursor: default;
+            transform: none;
+        }
+
+        /* ══════════════════════════════
+       VIDEO PAGE
+    ══════════════════════════════ */
+        .video-wrapper {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 32px 24px 80px;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--muted);
+            font-size: .88rem;
+            font-weight: 500;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: inherit;
+            margin-bottom: 24px;
+            padding: 8px 0;
+            transition: color .2s;
+        }
+
+        .btn-back:hover {
+            color: var(--text);
+        }
+
+        .video-container {
+            background: #000;
+            border-radius: var(--radius);
+            overflow: hidden;
+            aspect-ratio: 16/9;
+            width: 100%;
+            box-shadow: var(--shadow), 0 0 60px rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--border);
+        }
+
+        .video-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        .video-info {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+            margin-top: 24px;
+        }
+
+        .video-info h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .video-info p {
+            color: var(--muted);
+            font-size: .93rem;
+            line-height: 1.7;
+        }
+
+        .nav-btns {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
+        .btn-nav {
+            flex: 1;
+            min-width: 140px;
+            padding: 13px 20px;
+            border-radius: 10px;
+            border: 1.5px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            font-family: inherit;
+            font-size: .88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .2s, border-color .2s, transform .2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-nav:disabled {
+            opacity: .3;
+            cursor: not-allowed;
+        }
+
+        .btn-nav:not(:disabled):hover {
+            background: var(--accent);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .btn-nav.btn-next {
+            justify-content: flex-end;
+            background: linear-gradient(135deg, var(--point) 0%, var(--point-dim) 100%);
+            border-color: transparent;
+            box-shadow: 0 4px 16px rgba(233, 69, 96, 0.3);
+        }
+
+        .btn-nav.btn-next:not(:disabled):hover {
+            background: linear-gradient(135deg, #f05370 0%, var(--point) 100%);
+            box-shadow: 0 8px 24px rgba(233, 69, 96, 0.45);
+        }
+
+        .btn-nav.btn-next:disabled {
+            background: var(--card);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            .lock-box {
+                padding: 40px 28px;
+            }
+
+            .lock-box h1 {
+                font-size: 1.35rem;
+            }
+
+            .page-wrapper {
+                padding: 24px 16px 60px;
+            }
+
+            .page-header h2 {
+                font-size: 1.5rem;
+            }
+
+            .lectures-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .video-wrapper {
+                padding: 20px 16px 60px;
+            }
+
+            .video-info h2 {
+                font-size: 1.2rem;
+            }
+
+            .header-subtitle {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ══════════════════ LOCK SCREEN ══════════════════ -->
+    <div id="lockScreen">
+        <div class="lock-box">
+            <div class="lock-icon">🔐</div>
+            <h1>My Lecture Room</h1>
+            <p>접근 코드를 입력하여 강의실에 입장하세요</p>
+            <div class="input-group">
+                <input id="codeInput" type="password" placeholder="접근 코드 입력" autocomplete="off" />
+            </div>
+            <div class="error-msg" id="errorMsg"></div>
+            <button class="btn-primary" id="unlockBtn">입장하기 →</button>
+        </div>
+    </div>
+
+    <!-- ══════════════════ MAIN APP ══════════════════ -->
+    <div id="app" style="display:none">
+
+        <!-- Header -->
+        <header>
+            <div class="header-inner">
+                <div class="logo" onclick="showPage('dashboard')">
+                    <span>My Lecture Room</span>
+                    <span class="dot"></span>
+                    <span class="header-subtitle">조쉬의 콘텐츠 마스터클래스</span>
+                </div>
+                <button class="btn-logout" onclick="logout()">🚪 나가기</button>
+            </div>
+        </header>
+
+        <!-- Dashboard Page -->
+        <div id="page-dashboard" class="page active">
+            <div class="page-wrapper">
+                <div class="page-header">
+                    <h2>📚 강의 <em>목록</em></h2>
+                    <p>카드를 클릭하면 강의 영상을 바로 시청할 수 있어요</p>
+                    <div class="divider"></div>
+                </div>
+                <div class="progress-section" id="progressSection">
+                    <div class="progress-header">
+                        <span class="progress-label">📈 강의 진행률</span>
+                        <span class="progress-count" id="progressCount">0 / 17 완료</span>
+                    </div>
+                    <div class="progress-bar-track">
+                        <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+                    </div>
+                    <div class="progress-pct" id="progressPct">0%</div>
+                </div>
+                <div class="lectures-grid" id="lectureGrid"></div>
+            </div>
+        </div>
+
+        <!-- Video Page -->
+        <div id="page-video" class="page">
+            <div class="video-wrapper">
+                <button class="btn-back" onclick="showPage('dashboard')">
+                    ← 목록으로 돌아가기
+                </button>
+                <div class="video-container">
+                    <iframe id="videoFrame" src="" allowfullscreen allow="autoplay"></iframe>
+                </div>
+                <div class="video-info">
+                    <h2 id="videoTitle"></h2>
+                    <p id="videoDesc"></p>
+                </div>
+                <div class="nav-btns" style="margin-bottom:12px">
+                    <button class="btn-complete" id="btnComplete" onclick="toggleWatched()">
+                        ✓ 시청 완료로 표시
+                    </button>
+                </div>
+                <div class="nav-btns">
+                    <button class="btn-nav btn-prev" id="btnPrev" onclick="navigateLecture(-1)">← 이전 강의</button>
+                    <button class="btn-nav btn-next" id="btnNext" onclick="navigateLecture(1)">다음 강의 →</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        /* ═══════════════════════════════════════════════════════════
+           ██████  CONFIG — 여기만 수정하세요
+           ═══════════════════════════════════════════════════════════ */
+        const CONFIG = {
+
+            /* 접근 코드 (대소문자 구분) */
+            ACCESS_CODE: "LECTURE2026",
+
+            /* 강의 목록
+               driveFileId: 구글 드라이브 파일 URL에서 /d/ 뒤의 ID를 복사해 넣으세요
+               예) https://drive.google.com/file/d/1aBcD.../view  →  "1aBcD..."
+            */
+            lectures: [
+                {
+                    id: 1,
+                    title: "1강. 콘텐츠 기획의 본질 만드는 것이 아닌 문제 해결",
+                    description: "",
+                    driveFileId: "1DdMMjBPxqhoTxwyI4mltySNihHC4MWOG"
+                },
+                {
+                    id: 2,
+                    title: "2강. 페르소나를 넘어선 페인 포인트(Pain Point) 분석법",
+                    description: "",
+                    driveFileId: "1wSslbU4hs0NrqrHyROZlCbmYRsXRx8O3"
+                },
+                {
+                    id: 3,
+                    title: "3강. 절대 마르지 않는 콘텐츠 아이디어 뽑는 법",
+                    description: "",
+                    driveFileId: "1XbthIhZLxl1IAk4YbSVDSe4HprTMcnW9"
+                },
+                {
+                    id: 4,
+                    title: "4강. 팔리는 콘텐츠를 만드는 3단계 기획 프레임워크",
+                    description: "",
+                    driveFileId: "1LyL29KNYk-KFZ3H5YDj1bTJh5vu4wde4"
+                },
+                {
+                    id: 5,
+                    title: "5강. 고객을 멈추게 만드는 후킹 기획의 기술",
+                    description: "",
+                    driveFileId: "1q7rEzMrtYCe4EO2CyLolStsFEsHYNKg8"
+                },
+                {
+                    id: 6,
+                    title: "6강. 콘텐츠는 크게 2가지로 나뉜다 (정보성 vs 브랜딩)",
+                    description: "",
+                    driveFileId: "1gxKjFZqYP_QUVR8eR2f4RA9ysGvYygwN"
+                },
+                {
+                    id: 7,
+                    title: "7강. 사람의 심리를 이용한 7가지 콘텐츠 기획법",
+                    description: "",
+                    driveFileId: "1b-IJq3xw5bXquCre9PNaUnqDUc7qWAkJ"
+                },
+                {
+                    id: 8,
+                    title: "8강. 조회수는 우연, 전환은 설계. 콘텐츠 기획의 끝은 매출이다",
+                    description: "",
+                    driveFileId: "1jYTrtwsP1tqJyqv9N5_FBdLQvq3Wn8If"
+                },
+                {
+                    id: 9,
+                    title: "9강. 콘텐츠의 조회수는 정해져 있다 - 표본의 법칙",
+                    description: "",
+                    driveFileId: "1iCEZPCZpKiTaOew0qHqMSGzDvKnTaa76"
+                },
+                {
+                    id: 10,
+                    title: "10강. 편집 왕초보도 10분 만에 릴스 만들기 - 인스타 기능 & 리믹스 활용법",
+                    description: "",
+                    driveFileId: "1TZEkAZw6_dXZm0sN9YZM3p1K1-8phpJ6"
+                },
+                {
+                    id: 11,
+                    title: "11강. 캡컷 릴스 편집의 기본 - 30분이면 프로처럼 편집하기",
+                    description: "",
+                    driveFileId: "1fdFNNj1N30lem5Y1eQ7xCB12E49_n6qU"
+                },
+                {
+                    id: 12,
+                    title: "12강. 조회수 폭발하는 릴스 편집 공식 - 3초 법칙과 리텐션 편집",
+                    description: "",
+                    driveFileId: "1f1sp6IipRZCRAfybilpqSPwWAtViTGWQ"
+                },
+                {
+                    id: 13,
+                    title: "13강. 콘텐츠 유형별 편집 템플릿 - 따라만 하면 되는 편집 레시피",
+                    description: "",
+                    driveFileId: "1_Q3B34nyPxmgP61cIZTKA4adshTiBB0F"
+                },
+                {
+                    id: 14,
+                    title: "14강. 100만 바이럴 릴스의 공통점 - 성공하는 편집 패턴 분석",
+                    description: "",
+                    driveFileId: "1-evqEkVpCQAsQz_5p-MYhCuzobIIfL2-"
+                },
+                {
+                    id: 15,
+                    title: "15강. AI를 활용한 콘텐츠 제작 시간 10배 효율화 방법",
+                    description: "",
+                    driveFileId: "1HZepRcfoYirGOmY4Td4_WqF2qlMrBOO_"
+                },
+                {
+                    id: 16,
+                    title: "16강. AI를 활용한 레퍼런스 분석 및 100만 콘텐츠 기획법",
+                    description: "",
+                    driveFileId: "1K_tmkuzYBKxIDfbZsg5mw6t445UX0jLq"
+                },
+                {
+                    id: 17,
+                    title: "17강. 실제 매출을 키워주는 찐팬을 만드는 인스타그램 운영 전략",
+                    description: "",
+                    driveFileId: "1Ffl4rEpTPC783JWaQ355yzuS7ewFpRYQ"
+                }
+            ]
+
+        };
+        /* ═══════════════════════════════════════════════════════════
+           CONFIG 끝 — 아래는 수정 불필요
+           ═══════════════════════════════════════════════════════════ */
+
+        /* ── State ── */
+        let currentLectureId = null;
+
+        /* ── Watch Progress (localStorage) ── */
+        const LS_KEY = 'lrWatched';
+
+        function getWatched() {
+            try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; }
+            catch { return []; }
+        }
+
+        function isWatched(id) {
+            return getWatched().includes(id);
+        }
+
+        function setWatched(id, done) {
+            const watched = getWatched();
+            if (done && !watched.includes(id)) watched.push(id);
+            if (!done) {
+                const idx = watched.indexOf(id);
+                if (idx > -1) watched.splice(idx, 1);
+            }
+            localStorage.setItem(LS_KEY, JSON.stringify(watched));
+        }
+
+        function updateProgressBar() {
+            const total = CONFIG.lectures.length;
+            const done = getWatched().length;
+            const pct = Math.round((done / total) * 100);
+            document.getElementById('progressCount').textContent = `${done} / ${total} 완료`;
+            document.getElementById('progressFill').style.width = pct + '%';
+            document.getElementById('progressPct').textContent = pct + '%';
+        }
+
+        function updateCompleteBtn() {
+            const btn = document.getElementById('btnComplete');
+            if (!btn) return;
+            const watched = isWatched(currentLectureId);
+            btn.classList.toggle('done', watched);
+            btn.innerHTML = watched
+                ? '✅ 시청 완료됨 (취소하기)'
+                : '✓ 시청 완료로 표시';
+        }
+
+        function toggleWatched() {
+            const watched = isWatched(currentLectureId);
+            setWatched(currentLectureId, !watched);
+            updateCompleteBtn();
+        }
+
+        /* ── Auth ── */
+        function checkAuth() {
+            return sessionStorage.getItem('lrAuth') === CONFIG.ACCESS_CODE;
+        }
+
+        document.getElementById('unlockBtn').addEventListener('click', attemptUnlock);
+        document.getElementById('codeInput').addEventListener('keydown', e => {
+            if (e.key === 'Enter') attemptUnlock();
+            document.getElementById('errorMsg').textContent = '';
+        });
+
+        function attemptUnlock() {
+            const val = document.getElementById('codeInput').value.trim();
+            if (val === CONFIG.ACCESS_CODE) {
+                sessionStorage.setItem('lrAuth', CONFIG.ACCESS_CODE);
+                const lock = document.getElementById('lockScreen');
+                lock.classList.add('fade-out');
+                setTimeout(() => {
+                    lock.style.display = 'none';
+                    document.getElementById('app').style.display = 'block';
+                    renderDashboard();
+                }, 500);
+            } else {
+                const err = document.getElementById('errorMsg');
+                err.textContent = '❌ 잘못된 코드입니다. 다시 확인해주세요.';
+                const input = document.getElementById('codeInput');
+                input.value = '';
+                input.focus();
+                input.style.borderColor = '#e94560';
+                setTimeout(() => input.style.borderColor = '', 1500);
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('lrAuth');
+            document.getElementById('videoFrame').src = '';
+            document.getElementById('app').style.display = 'none';
+            const lock = document.getElementById('lockScreen');
+            lock.style.display = 'flex';
+            lock.classList.remove('fade-out');
+            lock.style.opacity = '1';
+            document.getElementById('codeInput').value = '';
+            document.getElementById('errorMsg').textContent = '';
+        }
+
+        /* ── SPA Routing ── */
+        function showPage(name) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            const target = document.getElementById('page-' + name);
+            if (target) target.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (name !== 'video') {
+                document.getElementById('videoFrame').src = '';
+                renderDashboard();
+            }
+        }
+
+        /* ── Dashboard ── */
+        function renderDashboard() {
+            updateProgressBar();
+            const grid = document.getElementById('lectureGrid');
+            grid.innerHTML = CONFIG.lectures.map(lec => {
+                const done = isWatched(lec.id);
+                return `
+    <div class="lecture-card${done ? ' watched' : ''}" onclick="playLecture(${lec.id})">
+      <div class="card-thumbnail">
+        <span class="card-num">Lec ${lec.id}</span>
+        ${done ? '<span class="watched-badge">✓ 완료</span>' : ''}
+        <div class="play-icon">▶</div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">${escHtml(lec.title)}</div>
+        <div class="card-desc">${escHtml(lec.description)}</div>
+      </div>
+      <div class="card-footer${done ? ' done' : ''}">
+        ${done ? '✅ 시청 완료' : '▶ 강의 시청하기'}
+      </div>
+    </div>
+  `;
+            }).join('');
+        }
+
+        /* ── Video ── */
+        function playLecture(id) {
+            const lec = CONFIG.lectures.find(l => l.id === id);
+            if (!lec) return;
+            currentLectureId = id;
+
+            document.getElementById('videoTitle').textContent = lec.title;
+            document.getElementById('videoDesc').textContent = lec.description;
+            document.getElementById('videoFrame').src =
+                `https://drive.google.com/file/d/${lec.driveFileId}/preview`;
+
+            const idx = CONFIG.lectures.findIndex(l => l.id === id);
+            document.getElementById('btnPrev').disabled = idx === 0;
+            document.getElementById('btnNext').disabled = idx === CONFIG.lectures.length - 1;
+
+            showPage('video');
+            updateCompleteBtn();
+        }
+
+        function navigateLecture(delta) {
+            const idx = CONFIG.lectures.findIndex(l => l.id === currentLectureId);
+            const next = CONFIG.lectures[idx + delta];
+            if (next) playLecture(next.id);
+        }
+
+        /* ── Utils ── */
+        function escHtml(str) {
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        /* ── Init ── */
+        (function init() {
+            if (checkAuth()) {
+                document.getElementById('lockScreen').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+                renderDashboard();
+            } else {
+                document.getElementById('codeInput').focus();
+            }
+        })();
+    </script>
+</body>
+
+</html>
