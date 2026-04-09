@@ -1,0 +1,2 @@
+Lecture Grid length before unlock: 0
+Lecture Grid length after render: 7270

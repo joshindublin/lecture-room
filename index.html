@@ -825,7 +825,7 @@
             padding: 10px 14px;
             border-radius: 12px;
             font-size: 0.95rem;
-            line-height: 出 1.5;
+            line-height: 1.5;
             word-break: break-word;
             white-space: pre-wrap;
         }
@@ -1271,6 +1271,21 @@
                 setTimeout(() => {
                     lock.style.display = 'none';
                     document.getElementById('app').style.display = 'block';
+                    document.getElementById('chatBtn').style.display = 'flex';
+
+                    // 첫 방문 시 말풍선
+                    if (!sessionStorage.getItem('lrChatTooltipShown')) {
+                        setTimeout(() => {
+                            const tt = document.getElementById('chatTooltip');
+                            if (tt) tt.style.display = 'block';
+                            setTimeout(() => {
+                                if (tt) { tt.style.opacity = '0'; setTimeout(() => tt.style.display = 'none', 500); }
+                            }, 5000);
+                            sessionStorage.setItem('lrChatTooltipShown', 'true');
+                        }, 1000);
+                    }
+
+                    loadChatHistory();
                     renderDashboard();
                 }, 500);
             } else {
