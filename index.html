@@ -1548,6 +1548,9 @@
 
             } catch (error) {
                 console.error(error);
+                // 실패한 user 메시지를 chatHistory에서 제거 (연속 user role 누적 방지)
+                chatHistory.pop();
+                sessionStorage.setItem('lrChatHistory', JSON.stringify(chatHistory));
                 if (chatMessages.contains(typingEl)) {
                     chatMessages.removeChild(typingEl);
                 }
