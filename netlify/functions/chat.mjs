@@ -25,12 +25,25 @@ export default async (req, context) => {
 
         // Netlify functions runtime provides process.cwd() as the project root occasionally, 
         // but a safer way is path.resolve or checking process.cwd().
-        let knowledgeBase = "";
+        let knowledgeBase = "지식 베이스 문서 임시 대체 내용 (파일 로드 실패시)";
         try {
-            knowledgeBase = await fs.readFile(path.resolve("knowledge-base.md"), "utf-8");
+            // Check Netlify lambda structure
+            const possiblePaths = [
+                path.resolve("knowledge-base.md"),
+                path.join(process.cwd(), "knowledge-base.md"),
+                path.resolve(__dirname, "../../knowledge-base.md") // fallback for bundled functions
+            ];
+            for (let p of possiblePaths) {
+                try {
+                    let content = await fs.readFile(p, "utf-8");
+                    if (content) {
+                        knowledgeBase = content;
+                        break;
+                    }
+                } catch (e) { continue; }
+            }
         } catch {
-            // fallback for some environments
-            knowledgeBase = await fs.readFile(path.join(process.cwd(), "knowledge-base.md"), "utf-8");
+            // Ignore entirely
         }
 
         const systemPrompt = `당신은 '조쉬의 콘텐츠 마스터클래스'의 AI 조교입니다.
@@ -105,8 +118,8 @@ ${knowledgeBase}`;
         });
 
     } catch (error) {
-        console.error("Chat API Error:", error);
-        return new Response(JSON.stringify({ error: error.message }), {
+        console.error("Chat API Error:", error.stack || error);
+        return new Response(JSON.stringify({ error: error.message, stack: error.stack }), {
             status: 500,
             headers: { "Access-Control-Allow-Origin": "*" }
         });
