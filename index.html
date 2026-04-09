@@ -1513,7 +1513,8 @@
                 });
 
                 if (!res.ok) {
-                    throw new Error("서버에서 오류가 발생했습니다. (상태 코드: " + res.status + ")");
+                    const errBody = await res.text().catch(() => "");
+                    throw new Error("서버 오류 " + res.status + ": " + errBody);
                 }
 
                 if (res.headers.has('X-Row-Id')) {
