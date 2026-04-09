@@ -61,7 +61,7 @@ ${knowledgeBase || "지식 베이스 없음 — 일반 지식으로 답변하세
 
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         const model = genAI.getGenerativeModel({
-            model: "gemini-2.0-flash",
+            model: "gemini-2.0-flash-lite",
             systemInstruction: systemPrompt
         });
 
