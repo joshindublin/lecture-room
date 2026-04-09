@@ -1,0 +1,4 @@
+*.mp4
+*.pdf
+*.gsheet
+node_modules/
