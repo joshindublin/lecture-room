@@ -1417,15 +1417,26 @@
         const chatSubmitBtn = document.getElementById('chatSubmitBtn');
 
         function loadChatHistory() {
-            const saved = sessionStorage.getItem('lrChatHistory');
-            if (saved) {
-                chatHistory = JSON.parse(saved);
-                chatMessages.innerHTML = '';
+            try {
+                const saved = sessionStorage.getItem('lrChatHistory');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (Array.isArray(parsed)) {
+                        chatHistory = parsed;
+                    }
+                }
+            } catch (e) {
+                console.error("Chat history parse error:", e);
+                chatHistory = [];
+            }
+
+            chatMessages.innerHTML = '';
+            if (chatHistory && chatHistory.length > 0) {
                 chatHistory.forEach(msg => {
                     if (msg.role !== 'system') {
                         const el = document.createElement('div');
                         el.className = 'chat-msg ' + (msg.role === 'user' ? 'user' : 'ai');
-                        el.textContent = msg.content;
+                        el.textContent = msg.content || '';
                         chatMessages.appendChild(el);
 
                         if (msg.role === 'model' && msg._rowId) {
@@ -1527,6 +1538,10 @@
                     body: JSON.stringify({ messages: chatHistory })
                 });
 
+                if (!res.ok) {
+                    throw new Error("서버에서 오류가 발생했습니다. (상태 코드: " + res.status + ")");
+                }
+
                 if (res.headers.has('X-Row-Id')) {
                     rowId = res.headers.get('X-Row-Id');
                 }
@@ -1543,10 +1558,12 @@
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
-                    const chunk = decoder.decode(value, { stream: true });
-                    fullAiAnswer += chunk;
-                    aiEl.textContent = fullAiAnswer;
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    if (value) {
+                        const chunk = decoder.decode(value, { stream: true });
+                        fullAiAnswer += chunk;
+                        aiEl.textContent = fullAiAnswer;
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }
                 }
 
                 chatHistory.push({ role: 'model', content: fullAiAnswer, _rowId: rowId, _feedbackSent: false });
