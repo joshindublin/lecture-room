@@ -1384,32 +1384,6 @@
             return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         }
 
-        /* ── Init ── */
-        (function init() {
-            if (checkAuth()) {
-                document.getElementById('lockScreen').style.display = 'none';
-                document.getElementById('app').style.display = 'block';
-                document.getElementById('chatBtn').style.display = 'flex';
-
-                // 첫 방문 시 말풍선
-                if (!sessionStorage.getItem('lrChatTooltipShown')) {
-                    setTimeout(() => {
-                        const tt = document.getElementById('chatTooltip');
-                        if (tt) tt.style.display = 'block';
-                        setTimeout(() => {
-                            if (tt) { tt.style.opacity = '0'; setTimeout(() => tt.style.display = 'none', 500); }
-                        }, 5000);
-                        sessionStorage.setItem('lrChatTooltipShown', 'true');
-                    }, 1000);
-                }
-
-                loadChatHistory();
-                renderDashboard();
-            } else {
-                document.getElementById('codeInput').focus();
-            }
-        })();
-
         /* ── Chatbot Logic ── */
         let chatHistory = [];
         const chatMessages = document.getElementById('chatMessages');
@@ -1587,6 +1561,32 @@
             chatInput.focus();
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
+
+        /* ── Init ── */
+        (function init() {
+            if (checkAuth()) {
+                document.getElementById('lockScreen').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+                document.getElementById('chatBtn').style.display = 'flex';
+
+                // 첫 방문 시 말풍선
+                if (!sessionStorage.getItem('lrChatTooltipShown')) {
+                    setTimeout(() => {
+                        const tt = document.getElementById('chatTooltip');
+                        if (tt) tt.style.display = 'block';
+                        setTimeout(() => {
+                            if (tt) { tt.style.opacity = '0'; setTimeout(() => tt.style.display = 'none', 500); }
+                        }, 5000);
+                        sessionStorage.setItem('lrChatTooltipShown', 'true');
+                    }, 1000);
+                }
+
+                loadChatHistory();
+                renderDashboard();
+            } else {
+                if (document.getElementById('codeInput')) document.getElementById('codeInput').focus();
+            }
+        })();
     </script>
 </body>
 
