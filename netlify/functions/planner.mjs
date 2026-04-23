@@ -9,9 +9,8 @@ export default async (req, context) => {
         const body = await req.json();
         const { concept, direction, target, purpose, price, benchmark, others, knowledgeBase } = body;
 
-        // [진단용 프롬프트 수정]
         const systemPrompt = `당신은 '조쉬의 콘텐츠 마스터클래스'의 수석 콘텐츠 기획자입니다.
-(시스템 버전: 2026-04-23-FINAL-V1)
+(시스템 버전: V2-PRO-STABLE)
 
 - 주제: ${concept}
 - 고민: ${direction}
@@ -28,20 +27,21 @@ ${knowledgeBase || ""}`;
 
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         
-        // [중요] apiVersion을 'v1'으로 강제 고정하고 가장 표준적인 모델명 사용
-        const model = genAI.getGenerativeModel(
-            { model: "gemini-1.5-flash" },
-            { apiVersion: "v1" }
-        );
+        // 가장 안정적이고 모든 곳에서 지원되는 'gemini-pro' 모델로 강제 전환
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
         const result = await model.generateContentStream(systemPrompt);
 
         const stream = new ReadableStream({
             async start(controller) {
-                for await (const chunk of result.stream) {
-                    controller.enqueue(new TextEncoder().encode(chunk.text()));
+                try {
+                    for await (const chunk of result.stream) {
+                        controller.enqueue(new TextEncoder().encode(chunk.text()));
+                    }
+                    controller.close();
+                } catch(e) {
+                    controller.error(e);
                 }
-                controller.close();
             }
         });
 
@@ -49,6 +49,6 @@ ${knowledgeBase || ""}`;
 
     } catch (error) {
         console.error("Planner Fatal Error:", error);
-        return new Response(JSON.stringify({ error: "[진단정보] " + error.message }), { status: 500, headers: { "Access-Control-Allow-Origin": "*" } });
+        return new Response(JSON.stringify({ error: "[최종진단] " + error.message }), { status: 500, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
     }
 };
