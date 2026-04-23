@@ -1,30 +1,30 @@
-import { google } from "googleapis";
+const { google } = require("googleapis");
 
-export default async (req, context) => {
-    if (req.method === "OPTIONS") {
-        return new Response("OK", {
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "POST, OPTIONS",
-                "Access-Control-Allow-Headers": "Content-Type"
-            }
-        });
+exports.handler = async (event, context) => {
+    const headers = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type"
+    };
+
+    if (event.httpMethod === "OPTIONS") {
+        return { statusCode: 200, headers, body: "OK" };
     }
 
     try {
-        const body = await req.json();
+        const body = JSON.parse(event.body);
         const serviceAccountKey = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
         const sheetsId = process.env.GOOGLE_SHEETS_ID;
 
         if (!serviceAccountKey || !sheetsId) {
-            return new Response(JSON.stringify({ status: "skipped" }), { status: 200 });
+            return { statusCode: 200, body: JSON.stringify({ status: "skipped" }) };
         }
 
         let credentialsJson;
         try {
             const decoded = Buffer.from(serviceAccountKey, 'base64').toString('utf8');
             credentialsJson = JSON.parse(decoded);
-        } catch {
+        } catch (e) {
             credentialsJson = JSON.parse(serviceAccountKey);
         }
 
@@ -62,9 +62,9 @@ export default async (req, context) => {
                 });
             }
         }
-        return new Response(JSON.stringify({ status: "success" }), { status: 200, headers: { "Access-Control-Allow-Origin": "*" } });
+        return { statusCode: 200, headers, body: JSON.stringify({ status: "success" }) };
     } catch (error) {
         console.error("Log Error:", error);
-        return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+        return { statusCode: 500, body: JSON.stringify({ error: error.message }) };
     }
 };
