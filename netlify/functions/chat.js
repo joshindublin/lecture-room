@@ -1,6 +1,6 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-exports.handler = async (event, context) => {
+export const handler = async (event, context) => {
     const headers = {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -17,10 +17,7 @@ exports.handler = async (event, context) => {
         const { messages, knowledgeBase } = body;
 
         const systemPrompt = `당신은 '조쉬의 콘텐츠 마스터클래스'의 AI 조교입니다.
-[답변 규칙]
-- 제공된 [지식 베이스] 내용을 1순위로 참고하세요.
-- 절대 이모지 및 볼드체를 사용하지 마세요.
-- 친근한 존댓말(~해요)을 사용하세요.
+[규칙] 이모지 금지, 볼드체 금지, 평문으로만 작성. 지식 베이스 최우선 참고.
 
 [지식 베이스]
 ${knowledgeBase || ""}`;
@@ -45,6 +42,10 @@ ${knowledgeBase || ""}`;
         };
     } catch (error) {
         console.error("Chat Error:", error);
-        return { statusCode: 500, headers, body: JSON.stringify({ error: error.message }) };
+        return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({ error: error.message })
+        };
     }
 };

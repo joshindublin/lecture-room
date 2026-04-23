@@ -1788,11 +1788,12 @@
                     body: JSON.stringify({ concept, direction, target, purpose, price, benchmark, knowledgeBase: kb })
                 });
 
+                const data = await res.json();
+
                 if (!res.ok) {
-                    throw new Error("서버 오류가 발생했습니다.");
+                    throw new Error(data.error || "서버 오류가 발생했습니다.");
                 }
 
-                const data = await res.json();
                 const fullText = data.answer || "기획안 생성에 실패했습니다.";
                 
                 if (typeof marked !== 'undefined') {

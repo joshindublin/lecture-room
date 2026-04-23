@@ -1,7 +1,6 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-exports.handler = async (event, context) => {
-    // CORS 처리
+export const handler = async (event, context) => {
     const headers = {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -14,17 +13,14 @@ exports.handler = async (event, context) => {
 
     try {
         const apiKey = process.env.GEMINI_API_KEY;
-        if (!apiKey) {
-            throw new Error("GEMINI_API_KEY is missing in environment variables.");
-        }
+        if (!apiKey) throw new Error("GEMINI_API_KEY 환경변수가 없습니다.");
 
         const body = JSON.parse(event.body);
         const { concept, direction, target, purpose, price, benchmark, knowledgeBase } = body;
 
         const systemPrompt = `당신은 '조쉬의 콘텐츠 마스터클래스'의 수석 콘텐츠 기획자입니다.
-수강생의 계정 정보를 분석하고, [지식 베이스]에 담긴 조쉬의 철학과 방법론을 바탕으로 상세한 전략을 제안하세요.
+수강생의 계정 정보를 분석하고 조쉬의 철학을 바탕으로 전략을 제안하세요.
 
-[요청 정보]
 - 컨셉: ${concept}
 - 방향: ${direction}
 - 타겟: ${target}
@@ -32,12 +28,7 @@ exports.handler = async (event, context) => {
 - 가격대: ${price}
 - 벤치마킹: ${benchmark}
 
-[출력 가이드라인]
-반드시 다음 4가지 항목을 포함하여 평문으로만 작성해주세요. (이모지 및 볼드체 사용 금지)
-1. 타겟 고객의 진짜 페인 포인트 진단
-2. 당장 쓸 수 있는 추천 후킹 주제 3가지
-3. 최적의 콘텐츠 포맷 제안
-4. 랜딩페이지 유입 & 전환 시나리오
+[규칙] 이모지 금지, 볼드체 금지, 평문으로만 작성. 지식 베이스를 최우선 참고할 것.
 
 [지식 베이스]
 ${knowledgeBase || ""}`;
@@ -46,20 +37,19 @@ ${knowledgeBase || ""}`;
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const result = await model.generateContent(systemPrompt);
-        const fullText = result.response.text();
+        const text = result.response.text();
 
         return {
             statusCode: 200,
             headers,
-            body: JSON.stringify({ answer: fullText })
+            body: JSON.stringify({ answer: text })
         };
-
     } catch (error) {
-        console.error("Function Error:", error);
+        console.error("Planner Error:", error);
         return {
             statusCode: 500,
             headers,
-            body: JSON.stringify({ error: error.message, stack: error.stack })
+            body: JSON.stringify({ error: error.message, detail: "서버 내부 오류가 발생했습니다." })
         };
     }
 };
