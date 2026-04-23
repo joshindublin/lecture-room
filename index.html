@@ -22,6 +22,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
         rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         /* ── Reset & Base ── */
         *,
@@ -200,6 +201,135 @@
         }
 
         /* ══════════════════════════════
+       PLANNER FORM & RESULT
+    ══════════════════════════════ */
+        .planner-form {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+            margin-bottom: 32px;
+            display: grid;
+            gap: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-row label {
+            font-size: .95rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .form-row input, .form-row textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: .95rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-row input:focus, .form-row textarea:focus {
+            outline: none;
+            border-color: var(--point);
+        }
+
+        .form-row textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn-submit-plan {
+            background: linear-gradient(135deg, var(--point) 0%, var(--point-dim) 100%);
+            color: #fff;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 8px;
+        }
+
+        .btn-submit-plan:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(233, 69, 96, 0.4);
+        }
+
+        .btn-submit-plan:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .planner-result {
+            background: rgba(15, 52, 96, 0.3);
+            border: 1px solid var(--accent);
+            border-radius: var(--radius);
+            padding: 32px;
+            line-height: 1.7;
+            display: none;
+        }
+
+        .planner-result h1, .planner-result h2, .planner-result h3 {
+            margin-top: 24px;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+
+        .planner-result p {
+            margin-bottom: 16px;
+            color: var(--text);
+        }
+
+        .planner-result ul, .planner-result ol {
+            margin-bottom: 16px;
+            padding-left: 24px;
+            color: var(--text);
+        }
+
+        .planner-result li {
+            margin-bottom: 8px;
+        }
+
+        .planner-result strong {
+            color: #fff;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 24px;
+        }
+        
+        .header-nav button {
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .header-nav button:hover, .header-nav button.active {
+            color: #fff;
+        }
+        
+        @media (max-width: 768px) {
+            .header-nav { margin-right: 12px; gap: 12px; }
+            .header-nav button { font-size: 0.85rem; }
+        }
+
+        /* ══════════════════════════════
        HEADER
     ══════════════════════════════ */
         header {
@@ -219,7 +349,8 @@
             height: 64px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: flex-start;
+            gap: 32px;
         }
 
         .logo {
@@ -260,6 +391,7 @@
         }
 
         .btn-logout {
+            margin-left: auto;
             background: rgba(233, 69, 96, 0.12);
             color: var(--point);
             border: 1px solid rgba(233, 69, 96, 0.25);
@@ -1007,6 +1139,10 @@
                     <span class="dot"></span>
                     <span class="header-subtitle">조쉬의 콘텐츠 마스터클래스</span>
                 </div>
+                <nav class="header-nav">
+                    <button id="nav-dashboard" class="active" onclick="showPage('dashboard')">📚 강의 목록</button>
+                    <button id="nav-planner" onclick="showPage('planner')">🎯 기획 도우미</button>
+                </nav>
                 <button class="btn-logout" onclick="logout()">🚪 나가기</button>
             </div>
         </header>
@@ -1030,6 +1166,41 @@
                     <div class="progress-pct" id="progressPct">0%</div>
                 </div>
                 <div class="lectures-grid" id="lectureGrid"></div>
+            </div>
+        </div>
+
+        <!-- Planner Page -->
+        <div id="page-planner" class="page">
+            <div class="page-wrapper">
+                <div class="page-header">
+                    <h2>🎯 AI 콘텐츠 <em>기획 도우미</em></h2>
+                    <p>현재 계정 상황을 입력하면, 조쉬의 기획 철학이 담긴 구체적인 콘텐츠 전략을 제안해 드립니다.</p>
+                    <div class="divider"></div>
+                </div>
+
+                <div class="planner-form">
+                    <div class="form-row">
+                        <label for="pConcept">1. 계정 컨셉 및 주제</label>
+                        <input type="text" id="pConcept" placeholder="예: 직장인을 위한 실전 엑셀 꿀팁, 다이어트 식단 레시피 등" />
+                    </div>
+                    <div class="form-row">
+                        <label for="pDirection">2. 계정 운영 방향성 (현재 상황/고민)</label>
+                        <textarea id="pDirection" placeholder="예: 정보성 위주로 올리고 있는데 조회수는 나오지만 팔로워가 안 늘어요. 퍼스널 브랜딩을 더하고 싶습니다."></textarea>
+                    </div>
+                    <div class="form-row">
+                        <label for="pTarget">3. 구체적인 타겟 고객</label>
+                        <input type="text" id="pTarget" placeholder="예: 매일 야근하는 3년차 이하 주니어 직장인" />
+                    </div>
+                    <div class="form-row">
+                        <label for="pPurpose">4. 원하는 마케팅 효과 및 목적 (전환 목표)</label>
+                        <input type="text" id="pPurpose" placeholder="예: 전자책 판매 랜딩페이지 유입, 1:1 컨설팅 문의 DM 유도" />
+                    </div>
+                    <button class="btn-submit-plan" id="btnSubmitPlan" onclick="generatePlan()">맞춤 기획안 생성하기 ✨</button>
+                </div>
+
+                <div id="plannerResult" class="planner-result">
+                    <!-- AI response will be injected here -->
+                </div>
             </div>
         </div>
 
@@ -1321,10 +1492,17 @@
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             const target = document.getElementById('page-' + name);
             if (target) target.classList.add('active');
+            
+            document.querySelectorAll('.header-nav button').forEach(btn => btn.classList.remove('active'));
+            const navBtn = document.getElementById('nav-' + name);
+            if (navBtn) navBtn.classList.add('active');
+
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            if (name !== 'video') {
+            if (name === 'dashboard') {
                 document.getElementById('videoFrame').src = '';
                 renderDashboard();
+            } else if (name === 'planner') {
+                document.getElementById('videoFrame').src = '';
             }
         }
 
@@ -1564,6 +1742,65 @@
             chatSubmitBtn.innerHTML = '→';
             chatInput.focus();
             chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        /* ── AI Planner Logic ── */
+        async function generatePlan() {
+            const concept = document.getElementById('pConcept').value.trim();
+            const direction = document.getElementById('pDirection').value.trim();
+            const target = document.getElementById('pTarget').value.trim();
+            const purpose = document.getElementById('pPurpose').value.trim();
+
+            if (!concept || !direction || !target || !purpose) {
+                alert("모든 항목을 구체적으로 입력해주세요!");
+                return;
+            }
+
+            const btn = document.getElementById('btnSubmitPlan');
+            const resultBox = document.getElementById('plannerResult');
+            
+            btn.disabled = true;
+            btn.textContent = "AI가 조쉬의 철학으로 기획안을 작성 중입니다... ⏳";
+            resultBox.style.display = 'block';
+            resultBox.innerHTML = "<p style='color: var(--muted); text-align: center; margin-top: 20px;'>수집된 데이터를 분석하고 있습니다...</p>";
+
+            try {
+                const res = await fetch('/.netlify/functions/planner', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ concept, direction, target, purpose })
+                });
+
+                if (!res.ok) {
+                    throw new Error("서버 오류가 발생했습니다.");
+                }
+
+                resultBox.innerHTML = ""; 
+                const reader = res.body.getReader();
+                const decoder = new TextDecoder();
+                let fullText = "";
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    if (value) {
+                        const chunk = decoder.decode(value, { stream: true });
+                        fullText += chunk;
+                        // 마크다운 랜더링 지원
+                        if (typeof marked !== 'undefined') {
+                            resultBox.innerHTML = marked.parse(fullText);
+                        } else {
+                            resultBox.innerText = fullText;
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+                resultBox.innerHTML = "<p style='color: #e94560;'>오류가 발생했습니다: " + err.message + "</p>";
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "맞춤 기획안 다시 생성하기 ✨";
+            }
         }
 
         /* ── Init ── */
