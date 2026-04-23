@@ -1724,29 +1724,14 @@
                     throw new Error("서버 오류 " + res.status + ": " + errBody);
                 }
 
-                if (res.headers.has('X-Row-Id')) {
-                    rowId = res.headers.get('X-Row-Id');
-                }
-
                 if (chatMessages.contains(typingEl)) {
                     chatMessages.removeChild(typingEl);
                 }
                 chatMessages.appendChild(aiEl);
 
-                const reader = res.body.getReader();
-                const decoder = new TextDecoder();
-                let fullAiAnswer = "";
-
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-                    if (value) {
-                        const chunk = decoder.decode(value, { stream: true });
-                        fullAiAnswer += chunk;
-                        aiEl.textContent = fullAiAnswer;
-                        chatMessages.scrollTop = chatMessages.scrollHeight;
-                    }
-                }
+                const data = await res.json();
+                const fullAiAnswer = data.answer || "답변을 가져오지 못했습니다.";
+                aiEl.textContent = fullAiAnswer;
 
                 chatHistory.push({ role: 'model', content: fullAiAnswer, _rowId: rowId, _feedbackSent: false });
                 sessionStorage.setItem('lrChatHistory', JSON.stringify(chatHistory));
@@ -1807,24 +1792,13 @@
                     throw new Error("서버 오류가 발생했습니다.");
                 }
 
-                resultBox.innerHTML = ""; 
-                const reader = res.body.getReader();
-                const decoder = new TextDecoder();
-                let fullText = "";
-
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-                    if (value) {
-                        const chunk = decoder.decode(value, { stream: true });
-                        fullText += chunk;
-                        // 마크다운 랜더링 지원
-                        if (typeof marked !== 'undefined') {
-                            resultBox.innerHTML = marked.parse(fullText);
-                        } else {
-                            resultBox.innerText = fullText;
-                        }
-                    }
+                const data = await res.json();
+                const fullText = data.answer || "기획안 생성에 실패했습니다.";
+                
+                if (typeof marked !== 'undefined') {
+                    resultBox.innerHTML = marked.parse(fullText);
+                } else {
+                    resultBox.innerText = fullText;
                 }
             } catch (err) {
                 console.error(err);
