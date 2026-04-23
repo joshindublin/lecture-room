@@ -1,3 +1,4 @@
+# Force redeploy trigger
 [build]
   publish = "."
   command = ""
