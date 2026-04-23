@@ -28,12 +28,12 @@ export const handler = async (event, context) => {
 - 목적: ${purpose}
 - 가격대: ${price}
 - 벤치마킹 스타일: ${benchmark}
-- 추가 요청사항: ${others || "없음"}
+- 기타 요청사항: ${others || "없음"}
 
 [출력 가이드라인]
 반드시 다음 4가지 항목을 포함하여 풍부하게 작성해주세요. 
-- **중요**: 절대 이모지 및 볼드체를 사용하지 마세요. 오직 평문으로만 작성하세요.
-- **중요**: 답변은 오직 [지식 베이스]의 철학을 기반으로 작성해야 합니다.
+- **중요**: 절대 이모지 및 볼드체(**)를 사용하지 마세요. 오직 평문으로만 작성하세요.
+- **중요**: 답변은 오직 제공된 [지식 베이스]의 철학을 기반으로 작성해야 합니다.
 
 1. 타겟 고객의 진짜 페인 포인트 진단
 2. 당장 쓸 수 있는 추천 후킹 주제 3가지
@@ -43,9 +43,12 @@ export const handler = async (event, context) => {
 [지식 베이스]
 ${knowledgeBase || ""}`;
 
+        // API 버전을 v1으로 명시하여 404 에러 방지
         const genAI = new GoogleGenerativeAI(apiKey);
-        // 404 에러 방지를 위해 가장 범용적인 gemini-1.5-pro 사용
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+        const model = genAI.getGenerativeModel(
+            { model: "gemini-1.5-flash" }, 
+            { apiVersion: 'v1' }
+        );
 
         const result = await model.generateContent(systemPrompt);
         const text = result.response.text();
@@ -57,6 +60,7 @@ ${knowledgeBase || ""}`;
         };
     } catch (error) {
         console.error("Planner Error:", error);
+        // 에러 발생 시 상세 메시지를 클라이언트에 전달
         return {
             statusCode: 500,
             headers,
