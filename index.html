@@ -79,7 +79,7 @@
         .btn-logout { margin-left: auto; background: rgba(233, 69, 96, 0.12); color: var(--point); border-radius: 8px; padding: 7px 14px; cursor: pointer; border: 1px solid rgba(233, 69, 96, 0.2); font-size: 0.8rem; font-weight: 600; }
 
         /* ══════════════════════════════
-           PLANNER FORM
+           PLANNER FORM & RESULT
         ══════════════════════════════ */
         .planner-form { background: var(--card); border-radius: var(--radius); padding: 28px; margin-bottom: 32px; display: grid; gap: 20px; border: 1px solid var(--border); }
         .form-row { display: flex; flex-direction: column; gap: 8px; }
@@ -90,7 +90,20 @@
         .btn-submit-plan { background: linear-gradient(135deg, var(--point) 0%, var(--point-dim) 100%); color: #fff; border: none; padding: 14px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 1rem; transition: transform 0.2s; }
         .btn-submit-plan:hover { transform: translateY(-2px); }
         .btn-submit-plan:disabled { opacity: 0.6; cursor: not-allowed; }
-        .planner-result { background: rgba(15, 52, 96, 0.3); border: 1px solid var(--accent); border-radius: var(--radius); padding: 32px; display: none; line-height: 1.8; color: var(--text); }
+
+        /* 🚀 결과창 가독성 최적화 최종본 */
+        .planner-result { 
+            background: rgba(15, 52, 96, 0.5); border: 1px solid var(--accent); 
+            border-radius: var(--radius); padding: 32px; display: none; 
+            line-height: 1.85; color: var(--text); 
+            word-break: keep-all; overflow-wrap: break-word; font-size: 0.98rem;
+        }
+        .planner-result h3 { color: #fff; margin-top: 36px; margin-bottom: 18px; border-left: 5px solid var(--point); padding-left: 15px; font-size: 1.35rem; font-weight: 900; }
+        .planner-result h3:first-child { margin-top: 0; }
+        .planner-result strong { color: var(--point); font-weight: 800; background: rgba(233, 69, 96, 0.1); padding: 2px 6px; border-radius: 4px; }
+        .planner-result p { margin-bottom: 20px; }
+        .planner-result ul, .planner-result ol { margin-bottom: 20px; padding-left: 24px; }
+        .planner-result li { margin-bottom: 12px; }
 
         /* ══════════════════════════════
            PAGES & GRID
@@ -99,13 +112,13 @@
         .page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .page-wrapper { max-width: 1200px; margin: 0 auto; padding: 40px 24px 80px; }
-        .lectures-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
-        .lecture-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; overflow: hidden; transition: transform 0.3s; }
+        .lectures-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+        .lecture-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; overflow: hidden; transition: transform 0.3s, border-color 0.3s; }
         .lecture-card:hover { transform: translateY(-6px); border-color: var(--point); }
-        .card-thumbnail { aspect-ratio: 16/9; background: var(--accent); display: flex; align-items: center; justify-content: center; position: relative; font-weight: 900; color: var(--point); font-size: 1.2rem; }
+        .card-thumbnail { aspect-ratio: 16/9; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--point); font-size: 1.2rem; }
         .card-body { padding: 20px; }
-        .card-title { font-weight: 700; margin-bottom: 8px; font-size: 1rem; }
-        .card-footer { padding: 12px 20px; border-top: 1px solid var(--border); color: var(--point); font-size: 0.8rem; font-weight: 700; }
+        .card-title { font-weight: 700; margin-bottom: 8px; font-size: 1.05rem; }
+        .card-footer { padding: 12px 20px; border-top: 1px solid var(--border); color: var(--point); font-size: 0.85rem; font-weight: 700; }
 
         /* ══════════════════════════════
            CHATBOT
@@ -114,7 +127,7 @@
         .chat-window { position: fixed; right: 24px; bottom: 90px; width: 420px; height: 600px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); z-index: 950; display: none; flex-direction: column; overflow: hidden; box-shadow: var(--shadow); }
         .chat-window.open { display: flex; }
         .chat-messages { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
-        .chat-msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 0.95rem; white-space: pre-wrap; }
+        .chat-msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 0.95rem; white-space: pre-wrap; word-break: keep-all; overflow-wrap: break-word; }
         .chat-msg.user { align-self: flex-end; background: var(--point); color: #fff; border-bottom-right-radius: 2px; }
         .chat-msg.ai { align-self: flex-start; background: var(--card); border: 1px solid var(--border); border-bottom-left-radius: 2px; }
         .chat-input-area { padding: 12px; display: flex; gap: 8px; background: var(--card); border-top: 1px solid var(--border); }
@@ -162,10 +175,10 @@
             <div class="page-wrapper">
                 <div style="margin-bottom:32px">
                     <h2 style="font-size:2rem; font-weight:900">🎯 AI 콘텐츠 <em>기획 도우미</em></h2>
-                    <p style="color:var(--muted)">조쉬의 철학이 담긴 전략을 제안합니다</p>
+                    <p style="color:var(--muted)">조쉬의 철학이 담긴 맞춤형 전략을 제안합니다</p>
                 </div>
                 <div class="planner-form">
-                    <div style="background: rgba(233, 69, 96, 0.1); border: 1px solid rgba(233, 69, 96, 0.3); padding: 16px; border-radius: 8px;">
+                    <div style="background: rgba(233, 69, 96, 0.1); border: 1px solid rgba(233, 69, 96, 0.3); padding: 18px; border-radius: 8px; font-size:0.92rem; border-left: 4px solid var(--point);">
                         💡 상황을 구체적으로 적을수록 훨씬 더 날카로운 맞춤형 피드백을 받을 수 있습니다.
                     </div>
                     <div class="form-row"><label>1. 계정 컨셉 및 주제</label><input type="text" id="pConcept" placeholder="예: 직장인을 위한 엑셀 꿀팁" /></div>
@@ -183,17 +196,20 @@
 
         <div id="page-video" class="page">
             <div class="page-wrapper">
-                <button class="btn-primary" style="width:auto; margin-bottom:20px; padding:10px 20px" onclick="showPage('dashboard')">← 목록으로 돌아가기</button>
-                <div style="aspect-ratio:16/9; background:#000; border-radius:var(--radius); overflow:hidden; border:1px solid var(--border)">
+                <button class="btn-primary" style="width:auto; margin-bottom:20px; padding:10px 24px" onclick="showPage('dashboard')">← 목록으로 돌아가기</button>
+                <div style="aspect-ratio:16/9; background:#000; border-radius:var(--radius); overflow:hidden; border:1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
                     <iframe id="videoFrame" style="width:100%; height:100%; border:none;" allowfullscreen></iframe>
                 </div>
-                <h2 id="videoTitle" style="margin-top:24px; font-size:1.5rem"></h2>
+                <h2 id="videoTitle" style="margin-top:24px; font-size:1.6rem; font-weight:800;"></h2>
             </div>
         </div>
 
         <button class="chat-btn" onclick="toggleChat()">💬</button>
         <div id="chatWindow" class="chat-window">
-            <div style="padding:16px; background:var(--card); font-weight:bold; border-bottom:1px solid var(--border)">🤖 AI 조교</div>
+            <div style="padding:16px; background:var(--card); font-weight:bold; border-bottom:1px solid var(--border); display:flex; justify-content:space-between;">
+                <span>🤖 AI 조교</span>
+                <span style="cursor:pointer; opacity:0.6" onclick="toggleChat()">✕</span>
+            </div>
             <div id="chatMessages" class="chat-messages">
                 <div class="chat-msg ai">안녕하세요! 강의 관련 궁금한 점을 물어보세요 😊</div>
             </div>
@@ -248,10 +264,13 @@
         }
 
         function renderDashboard() {
+            updateProgressBar();
             document.getElementById('lectureGrid').innerHTML = CONFIG.lectures.map(l => `
                 <div class="lecture-card" onclick="playLecture(${l.id})">
                     <div class="card-thumbnail">Lec ${l.id}</div>
-                    <div class="card-body"><div class="card-title">${l.title}</div></div>
+                    <div class="card-body">
+                        <div class="card-title">${l.title}</div>
+                    </div>
                     <div class="card-footer">▶ 강의 시청하기</div>
                 </div>
             `).join('');
@@ -262,6 +281,10 @@
             document.getElementById('videoTitle').textContent = l.title;
             document.getElementById('videoFrame').src = `https://drive.google.com/file/d/${l.driveFileId}/preview`;
             showPage('video');
+        }
+
+        function updateProgressBar() {
+            // Placeholder for progress logic if needed
         }
 
         async function getKB() { try { const r = await fetch('/knowledge-base.md'); return r.ok ? await r.text() : ""; } catch(e) {return "";} }
@@ -278,7 +301,8 @@
             try {
                 const kb = await getKB();
                 const res = await fetch('/.netlify/functions/chat', {
-                    method: 'POST', body: JSON.stringify({ messages: [{role:'user', content:text}], knowledgeBase: kb })
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ messages: [{role:'user', content:text}], knowledgeBase: kb })
                 });
                 const reader = res.body.getReader();
                 const decoder = new TextDecoder();
@@ -294,7 +318,7 @@
         async function generatePlan() {
             const btn = document.getElementById('btnSubmitPlan');
             const result = document.getElementById('plannerResult');
-            btn.disabled = true; result.style.display = 'block'; result.innerHTML = "분석 중... ⏳";
+            btn.disabled = true; result.style.display = 'block'; result.innerHTML = "<p style='text-align:center; padding:20px;'>조쉬의 철학으로 분석 중... ⏳</p>";
             try {
                 const body = {
                     concept: document.getElementById('pConcept').value,
@@ -317,7 +341,7 @@
                     full += decoder.decode(value);
                     result.innerHTML = marked.parse(full);
                 }
-            } catch(e) { result.innerHTML = "오류 발생: " + e.message; }
+            } catch(e) { result.innerHTML = "<p style='color:var(--point)'>오류 발생: " + e.message + "</p>"; }
             finally { btn.disabled = false; btn.textContent = "맞춤 기획안 다시 생성하기 ✨"; }
         }
 
