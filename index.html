@@ -1713,7 +1713,7 @@
 
             try {
                 const kb = await getKnowledgeBase();
-                const res = await fetch('/chat', {
+                const res = await fetch('/.netlify/functions/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ messages: chatHistory, knowledgeBase: kb })
@@ -1797,7 +1797,7 @@
 
             try {
                 const kb = await getKnowledgeBase();
-                const res = await fetch('/planner', {
+                const res = await fetch('/.netlify/functions/planner', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ concept, direction, target, purpose, price, benchmark, knowledgeBase: kb })

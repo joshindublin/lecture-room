@@ -6,10 +6,6 @@
 [build.environment]
   NODE_VERSION = "20"
 
-[[edge_functions]]
-  path = "/chat"
-  function = "chat"
-
-[[edge_functions]]
-  path = "/planner"
-  function = "planner"
+[functions]
+  node_bundler = "esbuild"
+  timeout = 26
