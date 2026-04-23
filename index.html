@@ -1674,7 +1674,7 @@
             sessionStorage.setItem('lrChatHistory', JSON.stringify(chatHistory));
 
             try {
-                await fetch('/log', {
+                await fetch('/.netlify/functions/log', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ rowId, feedback, comment })

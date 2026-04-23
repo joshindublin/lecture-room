@@ -11,7 +11,9 @@ export default async (req) => {
         });
     }
 
-    if (!Netlify.env.get("GEMINI_API_KEY")) {
+    const apiKey = typeof Netlify !== "undefined" ? Netlify.env.get("GEMINI_API_KEY") : Deno.env.get("GEMINI_API_KEY");
+
+    if (!apiKey) {
         return new Response(JSON.stringify({ error: "환경 변수 GEMINI_API_KEY가 설정되지 않았습니다." }), { 
             status: 500,
             headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } 
@@ -65,9 +67,9 @@ export default async (req) => {
 [지식 베이스 (조쉬의 노하우)]
 ${knowledgeBase || "지식 베이스 정보가 없습니다."}`;
 
-        const genAI = new GoogleGenerativeAI(Netlify.env.get("GEMINI_API_KEY"));
+        const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
-            model: "gemini-2.5-flash",
+            model: "gemini-2.0-flash",
             systemInstruction: "당신은 냉철하고 분석적인 콘텐츠 마케팅 전문가이자 조쉬의 페르소나를 가진 기획자입니다."
         });
 

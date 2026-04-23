@@ -11,7 +11,10 @@ export default async (req) => {
         });
     }
 
-    if (!Netlify.env.get("GEMINI_API_KEY")) {
+    // Netlify Edge Functions에서는 Netlify.env.get 또는 Deno.env.get 사용 가능
+    const apiKey = typeof Netlify !== "undefined" ? Netlify.env.get("GEMINI_API_KEY") : Deno.env.get("GEMINI_API_KEY");
+
+    if (!apiKey) {
         return new Response(
             JSON.stringify({ error: "환경 변수 GEMINI_API_KEY가 설정되지 않았습니다." }),
             { status: 500, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
@@ -44,9 +47,9 @@ export default async (req) => {
 [지식 베이스]
 ${knowledgeBase || "지식 베이스 없음 — 일반 지식으로 답변하세요."}`;
 
-        const genAI = new GoogleGenerativeAI(Netlify.env.get("GEMINI_API_KEY"));
+        const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
-            model: "gemini-2.5-flash",
+            model: "gemini-2.0-flash", // 호환성 높은 모델명 사용
             systemInstruction: systemPrompt
         });
 
@@ -76,16 +79,16 @@ ${knowledgeBase || "지식 베이스 없음 — 일반 지식으로 답변하세
                     controller.error(streamErr);
                 }
 
-                // 로깅
+                // 로깅 (표준 함수 호출)
                 try {
                     const originUrl = new URL(req.url).origin;
-                    await fetch(`${originUrl}/log`, {
+                    fetch(`${originUrl}/.netlify/functions/log`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ question: lastMessage, answer: fullAnswer, _time: rowId })
-                    });
+                    }).catch(e => console.error("Logging failed:", e));
                 } catch (logErr) {
-                    console.error("Logging failed:", logErr);
+                    console.error("Logging request preparation failed:", logErr);
                 }
             }
         });
