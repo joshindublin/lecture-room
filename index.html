@@ -1,17 +1,4 @@
 <!DOCTYPE html>
-<!--
-  ╔══════════════════════════════════════════════════════════════════╗
-  ║                      중요 안내사항                                  ║
-  ║  구글 드라이브 영상이 정상 재생되려면 다음 설정이 필요합니다:            ║
-  ║                                                                    ║
-  ║  1. 구글 드라이브에서 영상 파일 선택                                   ║
-  ║  2. 우클릭 → "공유" 클릭                                              ║
-  ║  3. "링크가 있는 모든 사용자" 로 권한 변경                              ║
-  ║  4. 저장 후, 파일 URL에서 FILE_ID 복사                                ║
-  ║     예: https://drive.google.com/file/d/[FILE_ID]/view              ║
-  ║  5. 아래 CONFIG 섹션의 driveFileId 에 붙여넣기                         ║
-  ╚══════════════════════════════════════════════════════════════════╝
--->
 <html lang="ko">
 
 <head>
@@ -25,14 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         /* ── Reset & Base ── */
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
             --bg: #1a1a2e;
             --card: #16213e;
@@ -45,1084 +25,111 @@
             --radius: 14px;
             --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
         }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            line-height: 1.6;
-        }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }
 
         /* ── Scrollbar ── */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--bg);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--accent);
-            border-radius: 3px;
-        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
 
         /* ══════════════════════════════
-       LOCK SCREEN
-    ══════════════════════════════ */
-        #lockScreen {
-            position: fixed;
-            inset: 0;
-            background: var(--bg);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            transition: opacity .5s ease;
-        }
-
-        #lockScreen.fade-out {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .lock-box {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 56px 48px;
-            width: min(420px, 92vw);
-            box-shadow: var(--shadow), 0 0 80px rgba(233, 69, 96, 0.08);
-            text-align: center;
-            animation: slideUp .6s cubic-bezier(.16, 1, .3, 1);
-        }
-
-        @keyframes slideUp {
-            from {
-                transform: translateY(30px);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .lock-icon {
-            font-size: 3rem;
-            margin-bottom: 12px;
-            filter: drop-shadow(0 0 16px rgba(233, 69, 96, 0.5));
-        }
-
-        .lock-box h1 {
-            font-size: 1.6rem;
-            font-weight: 700;
-            margin-bottom: 6px;
-            background: linear-gradient(135deg, #fff 0%, #c0c8e0 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .lock-box p {
-            color: var(--muted);
-            font-size: .9rem;
-            margin-bottom: 32px;
-        }
-
-        .input-group {
-            position: relative;
-            margin-bottom: 16px;
-        }
-
-        .input-group input {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1.5px solid var(--border);
-            border-radius: 10px;
-            padding: 14px 18px;
-            font-family: inherit;
-            font-size: 1rem;
-            font-weight: 500;
-            color: var(--text);
-            letter-spacing: .12em;
-            text-align: center;
-            transition: border-color .25s, box-shadow .25s;
-            outline: none;
-        }
-
-        .input-group input:focus {
-            border-color: var(--point);
-            box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.15);
-        }
-
-        .input-group input::placeholder {
-            color: var(--muted);
-            letter-spacing: .05em;
-        }
-
-        .error-msg {
-            color: var(--point);
-            font-size: .82rem;
-            margin-bottom: 14px;
-            min-height: 20px;
-            font-weight: 500;
-        }
-
-        .btn-primary {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, var(--point) 0%, var(--point-dim) 100%);
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            font-family: inherit;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: transform .2s, box-shadow .2s;
-            box-shadow: 0 4px 20px rgba(233, 69, 96, 0.35);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 28px rgba(233, 69, 96, 0.5);
-        }
-
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-
-        /* ══════════════════════════════
-       PLANNER FORM & RESULT
-    ══════════════════════════════ */
-        .planner-form {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 28px;
-            margin-bottom: 32px;
-            display: grid;
-            gap: 20px;
-        }
-
-        .form-row {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .form-row label {
-            font-size: .95rem;
-            font-weight: 700;
-            color: var(--text);
-        }
-
-        .form-row input, .form-row textarea {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1.5px solid var(--border);
-            border-radius: 8px;
-            padding: 12px 16px;
-            color: var(--text);
-            font-family: inherit;
-            font-size: .95rem;
-            transition: border-color 0.2s;
-        }
-
-        .form-row input:focus, .form-row textarea:focus {
-            outline: none;
-            border-color: var(--point);
-        }
-
-        .form-row textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .btn-submit-plan {
-            background: linear-gradient(135deg, var(--point) 0%, var(--point-dim) 100%);
-            color: #fff;
-            border: none;
-            padding: 14px 24px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            margin-top: 8px;
-        }
-
-        .btn-submit-plan:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(233, 69, 96, 0.4);
-        }
-
-        .btn-submit-plan:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .planner-result {
-            background: rgba(15, 52, 96, 0.3);
-            border: 1px solid var(--accent);
-            border-radius: var(--radius);
-            padding: 32px;
-            line-height: 1.7;
-            display: none;
-        }
-
-        .planner-result h1, .planner-result h2, .planner-result h3 {
-            margin-top: 24px;
-            margin-bottom: 12px;
-            color: #fff;
-        }
-
-        .planner-result p {
-            margin-bottom: 16px;
-            color: var(--text);
-        }
-
-        .planner-result ul, .planner-result ol {
-            margin-bottom: 16px;
-            padding-left: 24px;
-            color: var(--text);
-        }
-
-        .planner-result li {
-            margin-bottom: 8px;
-        }
-
-        .planner-result strong {
-            color: #fff;
-        }
-
-        .header-nav {
-            display: flex;
-            gap: 24px;
-        }
-        
-        .header-nav button {
-            background: none;
-            border: none;
-            color: var(--muted);
-            font-family: inherit;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-        
-        .header-nav button:hover, .header-nav button.active {
-            color: #fff;
-        }
-        
-        @media (max-width: 768px) {
-            .header-nav { margin-right: 12px; gap: 12px; }
-            .header-nav button { font-size: 0.85rem; }
-        }
-
-        /* ══════════════════════════════
-       HEADER
-    ══════════════════════════════ */
-        header {
-            background: rgba(22, 33, 62, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            padding: 0 24px;
-        }
-
-        .header-inner {
-            max-width: 1200px;
-            margin: 0 auto;
-            height: 64px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            gap: 32px;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.2rem;
-            font-weight: 900;
-            cursor: pointer;
-        }
-
-        .logo span.dot {
-            width: 8px;
-            height: 8px;
-            background: var(--point);
-            border-radius: 50%;
-            display: inline-block;
-            box-shadow: 0 0 8px var(--point);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: .4;
-            }
-        }
-
-        .header-subtitle {
-            font-size: .75rem;
-            color: var(--muted);
-            font-weight: 400;
-        }
-
-        .btn-logout {
-            margin-left: auto;
-            background: rgba(233, 69, 96, 0.12);
-            color: var(--point);
-            border: 1px solid rgba(233, 69, 96, 0.25);
-            border-radius: 8px;
-            padding: 7px 14px;
-            font-family: inherit;
-            font-size: .8rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background .2s, transform .2s;
-        }
-
-        .btn-logout:hover {
-            background: rgba(233, 69, 96, 0.22);
-            transform: scale(1.03);
-        }
-
-        /* ══════════════════════════════
-       PAGES (SPA)
-    ══════════════════════════════ */
-        .page {
-            display: none;
-            animation: fadeIn .4s ease;
-        }
-
-        .page.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* ══════════════════════════════
-       DASHBOARD PAGE
-    ══════════════════════════════ */
-        .page-wrapper {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 40px 24px 80px;
-        }
-
-        .page-header {
-            margin-bottom: 36px;
-        }
-
-        .page-header h2 {
-            font-size: 2rem;
-            font-weight: 900;
-            margin-bottom: 6px;
-        }
-
-        .page-header h2 em {
-            font-style: normal;
-            color: var(--point);
-        }
-
-        .page-header p {
-            color: var(--muted);
-            font-size: .95rem;
-        }
-
-        .divider {
-            height: 2px;
-            background: linear-gradient(90deg, var(--point) 0%, transparent 60%);
-            border-radius: 2px;
-            margin: 18px 0 32px;
-        }
-
-        /* Grid */
-        .lectures-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 24px;
-        }
-
-        /* Card */
-        .lecture-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            overflow: hidden;
-            cursor: pointer;
-            transition: transform .3s cubic-bezier(.16, 1, .3, 1), box-shadow .3s, border-color .3s;
-            position: relative;
-        }
-
-        .lecture-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(233, 69, 96, 0.2);
-            border-color: rgba(233, 69, 96, 0.3);
-        }
-
-        .card-thumbnail {
-            width: 100%;
-            aspect-ratio: 16/9;
-            background: linear-gradient(135deg, var(--accent) 0%, #1a1a4e 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card-thumbnail::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle at 30% 40%, rgba(233, 69, 96, 0.15) 0%, transparent 60%);
-        }
-
-        .card-num {
-            position: absolute;
-            top: 10px;
-            left: 12px;
-            background: var(--point);
-            color: #fff;
-            font-size: .72rem;
-            font-weight: 700;
-            padding: 3px 9px;
-            border-radius: 20px;
-            letter-spacing: .04em;
-        }
-
-        .play-icon {
-            width: 56px;
-            height: 56px;
-            background: rgba(255, 255, 255, 0.12);
-            border: 2px solid rgba(255, 255, 255, 0.25);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            backdrop-filter: blur(4px);
-            transition: transform .3s, background .3s;
-        }
-
-        .lecture-card:hover .play-icon {
-            transform: scale(1.12);
-            background: rgba(233, 69, 96, 0.4);
-        }
-
-        .card-body {
-            padding: 20px;
-        }
-
-        .card-title {
-            font-size: 1rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            line-height: 1.4;
-        }
-
-        .card-desc {
-            font-size: .83rem;
-            color: var(--muted);
-            line-height: 1.6;
-        }
-
-        .card-footer {
-            padding: 12px 20px;
-            border-top: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: .78rem;
-            color: var(--point);
-            font-weight: 600;
-        }
-
-        /* ── Watched State ── */
-        .lecture-card.watched {
-            border-color: rgba(34, 197, 94, 0.35);
-        }
-
-        .lecture-card.watched:hover {
-            border-color: rgba(34, 197, 94, 0.6);
-            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(34, 197, 94, 0.3);
-        }
-
-        .watched-badge {
-            position: absolute;
-            top: 10px;
-            right: 12px;
-            background: rgba(34, 197, 94, 0.9);
-            color: #fff;
-            font-size: .72rem;
-            font-weight: 700;
-            padding: 3px 9px;
-            border-radius: 20px;
-            letter-spacing: .04em;
-            backdrop-filter: blur(4px);
-        }
-
-        .card-footer.done {
-            color: #22c55e;
-        }
-
-        /* ── Progress Bar (Dashboard) ── */
-        .progress-section {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px 24px;
-            margin-bottom: 32px;
-        }
-
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .progress-label {
-            font-size: .88rem;
-            font-weight: 600;
-            color: var(--text);
-        }
-
-        .progress-count {
-            font-size: .82rem;
-            color: var(--muted);
-            font-weight: 500;
-        }
-
-        .progress-bar-track {
-            height: 8px;
-            background: rgba(255, 255, 255, 0.07);
-            border-radius: 99px;
-            overflow: hidden;
-        }
-
-        .progress-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
-            border-radius: 99px;
-            transition: width .6s cubic-bezier(.16, 1, .3, 1);
-        }
-
-        .progress-pct {
-            font-size: .78rem;
-            color: #22c55e;
-            font-weight: 700;
-            margin-top: 8px;
-            text-align: right;
-        }
-
-        /* ── Mark Complete Button ── */
-        .btn-complete {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 24px;
-            border-radius: 10px;
-            border: 1.5px solid rgba(34, 197, 94, 0.4);
-            background: rgba(34, 197, 94, 0.1);
-            color: #22c55e;
-            font-family: inherit;
-            font-size: .9rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background .2s, transform .2s, border-color .2s;
-        }
-
-        .btn-complete:hover {
-            background: rgba(34, 197, 94, 0.2);
-            border-color: rgba(34, 197, 94, 0.6);
-            transform: translateY(-2px);
-        }
-
-        .btn-complete.done {
-            background: rgba(34, 197, 94, 0.18);
-            border-color: rgba(34, 197, 94, 0.5);
-            cursor: default;
-            transform: none;
-        }
-
-        /* ══════════════════════════════
-       VIDEO PAGE
-    ══════════════════════════════ */
-        .video-wrapper {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 32px 24px 80px;
-        }
-
-        .btn-back {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--muted);
-            font-size: .88rem;
-            font-weight: 500;
-            cursor: pointer;
-            background: none;
-            border: none;
-            font-family: inherit;
-            margin-bottom: 24px;
-            padding: 8px 0;
-            transition: color .2s;
-        }
-
-        .btn-back:hover {
-            color: var(--text);
-        }
-
-        .video-container {
-            background: #000;
-            border-radius: var(--radius);
-            overflow: hidden;
-            aspect-ratio: 16/9;
-            width: 100%;
-            box-shadow: var(--shadow), 0 0 60px rgba(0, 0, 0, 0.6);
-            border: 1px solid var(--border);
-        }
-
-        .video-container iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            display: block;
-        }
-
-        .video-info {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 28px;
-            margin-top: 24px;
-        }
-
-        .video-info h2 {
-            font-size: 1.5rem;
-            font-weight: 800;
-            margin-bottom: 10px;
-        }
-
-        .video-info p {
-            color: var(--muted);
-            font-size: .93rem;
-            line-height: 1.7;
-        }
-
-        .nav-btns {
-            display: flex;
-            gap: 12px;
-            margin-top: 24px;
-            flex-wrap: wrap;
-        }
-
-        .btn-nav {
-            flex: 1;
-            min-width: 140px;
-            padding: 13px 20px;
-            border-radius: 10px;
-            border: 1.5px solid var(--border);
-            background: var(--card);
-            color: var(--text);
-            font-family: inherit;
-            font-size: .88rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background .2s, border-color .2s, transform .2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-nav:disabled {
-            opacity: .3;
-            cursor: not-allowed;
-        }
-
-        .btn-nav:not(:disabled):hover {
-            background: var(--accent);
-            border-color: rgba(255, 255, 255, 0.15);
-            transform: translateY(-2px);
-        }
-
-        .btn-nav.btn-next {
-            justify-content: flex-end;
-            background: linear-gradient(135deg, var(--point) 0%, var(--point-dim) 100%);
-            border-color: transparent;
-            box-shadow: 0 4px 16px rgba(233, 69, 96, 0.3);
-        }
-
-        .btn-nav.btn-next:not(:disabled):hover {
-            background: linear-gradient(135deg, #f05370 0%, var(--point) 100%);
-            box-shadow: 0 8px 24px rgba(233, 69, 96, 0.45);
-        }
-
-        .btn-nav.btn-next:disabled {
-            background: var(--card);
-        }
-
-        /* ── Responsive ── */
-        @media (max-width: 600px) {
-            .lock-box {
-                padding: 40px 28px;
-            }
-
-            .lock-box h1 {
-                font-size: 1.35rem;
-            }
-
-            .page-wrapper {
-                padding: 24px 16px 60px;
-            }
-
-            .page-header h2 {
-                font-size: 1.5rem;
-            }
-
-            .lectures-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .video-wrapper {
-                padding: 20px 16px 60px;
-            }
-
-            .video-info h2 {
-                font-size: 1.2rem;
-            }
-
-            .header-subtitle {
-                display: none;
-            }
-        }
-
-        /* ══════════════════════════════
-           CHATBOT UI
+           LOCK SCREEN
         ══════════════════════════════ */
-        .chat-btn {
-            position: fixed;
-            right: 24px;
-            bottom: 24px;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: var(--point);
-            color: #fff;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            box-shadow: 0 4px 16px rgba(233, 69, 96, 0.4);
-            z-index: 900;
-            transition: transform 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        #lockScreen {
+            position: fixed; inset: 0; background: var(--bg);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 1000; transition: opacity .5s ease;
         }
-
-        .chat-btn:hover {
-            transform: scale(1.1);
+        #lockScreen.fade-out { opacity: 0; pointer-events: none; }
+        .lock-box {
+            background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+            padding: 56px 48px; width: min(420px, 92vw); text-align: center;
+            box-shadow: var(--shadow); animation: slideUp .6s cubic-bezier(.16, 1, .3, 1);
         }
-
-        .chat-tooltip {
-            position: fixed;
-            right: 90px;
-            bottom: 35px;
-            background: var(--point);
-            color: #fff;
-            padding: 8px 14px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 700;
-            box-shadow: 0 4px 12px rgba(233, 69, 96, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            z-index: 899;
-            opacity: 1;
-            transition: opacity 0.5s;
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .lock-icon { font-size: 3rem; margin-bottom: 12px; }
+        .lock-box h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 6px; }
+        .lock-box p { color: var(--muted); font-size: .9rem; margin-bottom: 32px; }
+        .input-group { margin-bottom: 16px; }
+        .input-group input {
+            width: 100%; background: rgba(255, 255, 255, 0.05); border: 1.5px solid var(--border);
+            border-radius: 10px; padding: 14px 18px; color: var(--text); text-align: center; outline: none;
+            font-family: inherit; font-size: 1rem;
         }
-
-        .chat-tooltip::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            right: -6px;
-            transform: translateY(-50%);
-            border-width: 6px 0 6px 6px;
-            border-style: solid;
-            border-color: transparent transparent transparent var(--point);
+        .error-msg { color: var(--point); font-size: .82rem; margin-bottom: 14px; min-height: 20px; }
+        .btn-primary {
+            width: 100%; padding: 14px; background: linear-gradient(135deg, var(--point) 0%, var(--point-dim) 100%);
+            color: #fff; border: none; border-radius: 10px; font-weight: 700; cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(233, 69, 96, 0.4); }
 
-        .chat-window {
-            position: fixed;
-            right: 24px;
-            bottom: 90px;
-            width: 460px;
-            height: 1000px;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-            z-index: 950;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            transform: translateY(20px);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s, transform 0.3s;
-        }
+        /* ══════════════════════════════
+           HEADER
+        ══════════════════════════════ */
+        header { background: rgba(22, 33, 62, 0.85); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+        .header-inner { max-width: 1200px; margin: 0 auto; height: 64px; display: flex; align-items: center; justify-content: flex-start; gap: 32px; padding: 0 24px; }
+        .logo { display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: 900; cursor: pointer; }
+        .logo span.dot { width: 8px; height: 8px; background: var(--point); border-radius: 50%; box-shadow: 0 0 8px var(--point); }
+        .header-subtitle { font-size: .75rem; color: var(--muted); font-weight: 400; }
+        .header-nav { display: flex; gap: 24px; }
+        .header-nav button { background: none; border: none; color: var(--muted); font-family: inherit; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: color 0.2s; }
+        .header-nav button.active { color: #fff; }
+        .btn-logout { margin-left: auto; background: rgba(233, 69, 96, 0.12); color: var(--point); border-radius: 8px; padding: 7px 14px; cursor: pointer; border: 1px solid rgba(233, 69, 96, 0.2); font-size: 0.8rem; font-weight: 600; }
 
-        .chat-window.open {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto;
-        }
+        /* ══════════════════════════════
+           PLANNER FORM
+        ══════════════════════════════ */
+        .planner-form { background: var(--card); border-radius: var(--radius); padding: 28px; margin-bottom: 32px; display: grid; gap: 20px; border: 1px solid var(--border); }
+        .form-row { display: flex; flex-direction: column; gap: 8px; }
+        .form-row label { font-size: .95rem; font-weight: 700; color: var(--text); }
+        .form-row input, .form-row textarea { width: 100%; background: rgba(255, 255, 255, 0.05); border: 1.5px solid var(--border); border-radius: 8px; padding: 12px 16px; color: var(--text); outline: none; font-family: inherit; transition: border-color 0.2s; }
+        .form-row input:focus, .form-row textarea:focus { border-color: var(--point); }
+        .form-row textarea { min-height: 80px; resize: vertical; }
+        .btn-submit-plan { background: linear-gradient(135deg, var(--point) 0%, var(--point-dim) 100%); color: #fff; border: none; padding: 14px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 1rem; transition: transform 0.2s; }
+        .btn-submit-plan:hover { transform: translateY(-2px); }
+        .btn-submit-plan:disabled { opacity: 0.6; cursor: not-allowed; }
+        .planner-result { background: rgba(15, 52, 96, 0.3); border: 1px solid var(--accent); border-radius: var(--radius); padding: 32px; display: none; line-height: 1.8; color: var(--text); }
 
-        .chat-header {
-            background: var(--card);
-            padding: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-        }
+        /* ══════════════════════════════
+           PAGES & GRID
+        ══════════════════════════════ */
+        .page { display: none; animation: fadeIn .4s ease; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .page-wrapper { max-width: 1200px; margin: 0 auto; padding: 40px 24px 80px; }
+        .lectures-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
+        .lecture-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; overflow: hidden; transition: transform 0.3s; }
+        .lecture-card:hover { transform: translateY(-6px); border-color: var(--point); }
+        .card-thumbnail { aspect-ratio: 16/9; background: var(--accent); display: flex; align-items: center; justify-content: center; position: relative; font-weight: 900; color: var(--point); font-size: 1.2rem; }
+        .card-body { padding: 20px; }
+        .card-title { font-weight: 700; margin-bottom: 8px; font-size: 1rem; }
+        .card-footer { padding: 12px 20px; border-top: 1px solid var(--border); color: var(--point); font-size: 0.8rem; font-weight: 700; }
 
-        .chat-header h3 {
-            font-size: 1.1rem;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .chat-close {
-            background: none;
-            border: none;
-            color: var(--muted);
-            cursor: pointer;
-            font-size: 1.2rem;
-            transition: color 0.2s;
-        }
-
-        .chat-close:hover {
-            color: var(--text);
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 16px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .chat-msg {
-            max-width: 85%;
-            padding: 10px 14px;
-            border-radius: 12px;
-            font-size: 0.95rem;
-            line-height: 1.5;
-            word-break: break-word;
-            white-space: pre-wrap;
-        }
-
-        .chat-msg.user {
-            align-self: flex-end;
-            background: var(--point);
-            color: #fff;
-            border-bottom-right-radius: 2px;
-        }
-
-        .chat-msg.ai {
-            align-self: flex-start;
-            background: var(--card);
-            color: var(--text);
-            border-bottom-left-radius: 2px;
-            border: 1px solid var(--border);
-        }
-
-        .chat-feedback {
-            display: flex;
-            gap: 8px;
-            margin-top: -6px;
-            margin-bottom: 12px;
-            justify-content: flex-start;
-        }
-
-        .chat-feedback button {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            color: var(--text);
-            padding: 4px 10px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: background 0.2s;
-        }
-
-        .chat-feedback button:hover {
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .chat-feedback.done {
-            font-size: 0.8rem;
-            color: var(--muted);
-            padding-left: 4px;
-            margin-top: -6px;
-            margin-bottom: 12px;
-            border: none;
-            background: transparent;
-        }
-
-        .chat-input-area {
-            padding: 12px;
-            background: var(--card);
-            border-top: 1px solid var(--border);
-            display: flex;
-            gap: 8px;
-        }
-
-        .chat-input-area textarea {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 10px 14px;
-            color: var(--text);
-            font-family: inherit;
-            resize: none;
-            height: 44px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .chat-input-area textarea:focus {
-            border-color: var(--point);
-        }
-
-        .chat-input-area button {
-            background: var(--point);
-            border: none;
-            color: #fff;
-            width: 44px;
-            height: 44px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-        }
-
-        .chat-input-area button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .typing-indicator {
-            display: flex;
-            gap: 4px;
-            padding: 14px 16px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            border-bottom-left-radius: 2px;
-            align-self: flex-start;
-            margin-bottom: 12px;
-        }
-
-        .typing-dot {
-            width: 6px;
-            height: 6px;
-            background: var(--muted);
-            border-radius: 50%;
-            animation: typing 1.4s infinite ease-in-out both;
-        }
-
-        .typing-dot:nth-child(1) {
-            animation-delay: -0.32s;
-        }
-
-        .typing-dot:nth-child(2) {
-            animation-delay: -0.16s;
-        }
-
-        @keyframes typing {
-
-            0%,
-            80%,
-            100% {
-                transform: scale(0);
-            }
-
-            40% {
-                transform: scale(1);
-            }
-        }
-
-        @media (max-width: 600px) {
-            .chat-window {
-                width: 90vw;
-                height: 70vh;
-                right: 5vw;
-                bottom: 90px;
-            }
-
-            .chat-tooltip {
-                right: 80px;
-            }
-        }
+        /* ══════════════════════════════
+           CHATBOT
+        ══════════════════════════════ */
+        .chat-btn { position: fixed; right: 24px; bottom: 24px; width: 56px; height: 56px; border-radius: 50%; background: var(--point); border: none; cursor: pointer; z-index: 900; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 4px 16px rgba(233,69,96,0.4); }
+        .chat-window { position: fixed; right: 24px; bottom: 90px; width: 420px; height: 600px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); z-index: 950; display: none; flex-direction: column; overflow: hidden; box-shadow: var(--shadow); }
+        .chat-window.open { display: flex; }
+        .chat-messages { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        .chat-msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 0.95rem; white-space: pre-wrap; }
+        .chat-msg.user { align-self: flex-end; background: var(--point); color: #fff; border-bottom-right-radius: 2px; }
+        .chat-msg.ai { align-self: flex-start; background: var(--card); border: 1px solid var(--border); border-bottom-left-radius: 2px; }
+        .chat-input-area { padding: 12px; display: flex; gap: 8px; background: var(--card); border-top: 1px solid var(--border); }
+        .chat-input-area textarea { flex: 1; height: 44px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 8px; resize: none; outline: none; font-family: inherit; }
     </style>
 </head>
 
 <body>
-
     <!-- ══════════════════ LOCK SCREEN ══════════════════ -->
     <div id="lockScreen">
         <div class="lock-box">
             <div class="lock-icon">🔐</div>
             <h1>My Lecture Room</h1>
             <p>접근 코드를 입력하여 강의실에 입장하세요</p>
-            <div class="input-group">
-                <input id="codeInput" type="password" placeholder="접근 코드 입력" autocomplete="off" />
-            </div>
+            <div class="input-group"><input id="codeInput" type="password" placeholder="접근 코드" /></div>
             <div class="error-msg" id="errorMsg"></div>
             <button class="btn-primary" id="unlockBtn">입장하기 →</button>
         </div>
@@ -1130,15 +137,9 @@
 
     <!-- ══════════════════ MAIN APP ══════════════════ -->
     <div id="app" style="display:none">
-
-        <!-- Header -->
         <header>
             <div class="header-inner">
-                <div class="logo" onclick="showPage('dashboard')">
-                    <span>My Lecture Room</span>
-                    <span class="dot"></span>
-                    <span class="header-subtitle">조쉬의 콘텐츠 마스터클래스</span>
-                </div>
+                <div class="logo" onclick="showPage('dashboard')">My Lecture Room <span class="dot"></span> <span class="header-subtitle">조쉬의 콘텐츠 마스터클래스</span></div>
                 <nav class="header-nav">
                     <button id="nav-dashboard" class="active" onclick="showPage('dashboard')">📚 강의 목록</button>
                     <button id="nav-planner" onclick="showPage('planner')">🎯 기획 도우미</button>
@@ -1147,426 +148,181 @@
             </div>
         </header>
 
-        <!-- Dashboard Page -->
         <div id="page-dashboard" class="page active">
             <div class="page-wrapper">
-                <div class="page-header">
-                    <h2>📚 강의 <em>목록</em></h2>
-                    <p>카드를 클릭하면 강의 영상을 바로 시청할 수 있어요</p>
-                    <div class="divider"></div>
-                </div>
-                <div class="progress-section" id="progressSection">
-                    <div class="progress-header">
-                        <span class="progress-label">📈 강의 진행률</span>
-                        <span class="progress-count" id="progressCount">0 / 17 완료</span>
-                    </div>
-                    <div class="progress-bar-track">
-                        <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
-                    </div>
-                    <div class="progress-pct" id="progressPct">0%</div>
+                <div style="margin-bottom:32px">
+                    <h2 style="font-size:2rem; font-weight:900">📚 강의 <em>목록</em></h2>
+                    <p style="color:var(--muted)">카드를 클릭하여 영상을 시청하세요</p>
                 </div>
                 <div class="lectures-grid" id="lectureGrid"></div>
             </div>
         </div>
 
-        <!-- Planner Page -->
         <div id="page-planner" class="page">
             <div class="page-wrapper">
-                <div class="page-header">
-                    <h2>🎯 AI 콘텐츠 <em>기획 도우미</em></h2>
-                    <p>현재 계정 상황을 입력하면, 조쉬의 기획 철학이 담긴 구체적인 콘텐츠 전략을 제안해 드립니다.</p>
-                    <div class="divider"></div>
+                <div style="margin-bottom:32px">
+                    <h2 style="font-size:2rem; font-weight:900">🎯 AI 콘텐츠 <em>기획 도우미</em></h2>
+                    <p style="color:var(--muted)">조쉬의 철학이 담긴 전략을 제안합니다</p>
                 </div>
-
                 <div class="planner-form">
-                    <div style="background: rgba(233, 69, 96, 0.1); border: 1px solid rgba(233, 69, 96, 0.3); padding: 16px; border-radius: 8px; margin-bottom: 8px;">
-                        <p style="color: var(--point); font-size: 0.9rem; font-weight: 700; margin: 0;">💡 기획 퀄리티를 높이는 Tip</p>
-                        <p style="color: var(--text); font-size: 0.85rem; margin-top: 4px; margin-bottom: 0;">현재 상황과 목적을 최대한 구체적이고 상세하게 작성할수록, 뻔한 소리가 아닌 <b>훨씬 더 디테일하고 날카로운 맞춤형 기획 피드백</b>을 받을 수 있습니다.</p>
+                    <div style="background: rgba(233, 69, 96, 0.1); border: 1px solid rgba(233, 69, 96, 0.3); padding: 16px; border-radius: 8px;">
+                        💡 상황을 구체적으로 적을수록 훨씬 더 날카로운 맞춤형 피드백을 받을 수 있습니다.
                     </div>
-                    <div class="form-row">
-                        <label for="pConcept">1. 계정 컨셉 및 주제</label>
-                        <input type="text" id="pConcept" placeholder="예: 직장인을 위한 실전 엑셀 꿀팁, 다이어트 식단 레시피 등" />
-                    </div>
-                    <div class="form-row">
-                        <label for="pDirection">2. 계정 운영 방향성 (현재 상황/고민)</label>
-                        <textarea id="pDirection" placeholder="예: 정보성 위주로 올리고 있는데 조회수는 나오지만 팔로워가 안 늘어요. 퍼스널 브랜딩을 더하고 싶습니다."></textarea>
-                    </div>
-                    <div class="form-row">
-                        <label for="pTarget">3. 구체적인 타겟 고객</label>
-                        <input type="text" id="pTarget" placeholder="예: 매일 야근하는 3년차 이하 주니어 직장인" />
-                    </div>
-                    <div class="form-row">
-                        <label for="pPurpose">4. 원하는 마케팅 효과 및 목적 (전환 목표)</label>
-                        <input type="text" id="pPurpose" placeholder="예: 전자책 판매 랜딩페이지 유입, 1:1 컨설팅 문의 DM 유도" />
-                    </div>
-                    <div class="form-row">
-                        <label for="pPrice">5. 판매 상품의 형태 및 가격대 (없다면 '없음')</label>
-                        <input type="text" id="pPrice" placeholder="예: 3만원대 전자책, 100만원대 1:1 컨설팅, 오프라인 매장 방문 등" />
-                    </div>
-                    <div class="form-row">
-                        <label for="pBenchmark">6. 벤치마킹 하고 싶은 스타일 (선택 사항)</label>
-                        <input type="text" id="pBenchmark" placeholder="예: '슈카월드'식 썰풀이 (AI는 링크 접속이 불가하므로 특징을 적어주세요)" />
-                    </div>
-                    <div class="form-row">
-                        <label for="pOthers">7. 기타 추가로 하고 싶은 말 (선택 사항)</label>
-                        <textarea id="pOthers" placeholder="예: 저는 편집 실력이 부족해서 컷 편집 위주로만 하고 싶어요."></textarea>
-                    </div>
+                    <div class="form-row"><label>1. 계정 컨셉 및 주제</label><input type="text" id="pConcept" placeholder="예: 직장인을 위한 엑셀 꿀팁" /></div>
+                    <div class="form-row"><label>2. 계정 운영 방향성 (현재 고민)</label><textarea id="pDirection" placeholder="예: 팔로워는 늘지만 유입이 적어요"></textarea></div>
+                    <div class="form-row"><label>3. 구체적인 타겟 고객</label><input type="text" id="pTarget" placeholder="예: 2030 사회초년생" /></div>
+                    <div class="form-row"><label>4. 원하는 마케팅 효과 (전환 목표)</label><input type="text" id="pPurpose" placeholder="예: 전자책 판매 유입" /></div>
+                    <div class="form-row"><label>5. 판매 상품의 형태 및 가격대</label><input type="text" id="pPrice" placeholder="예: 3만원대 VOD" /></div>
+                    <div class="form-row"><label>6. 벤치마킹 하고 싶은 스타일 (선택)</label><input type="text" id="pBenchmark" placeholder="예: 유머러스한 썰풀이 방식" /></div>
+                    <div class="form-row"><label>7. 기타 추가로 하고 싶은 말 (선택)</label><textarea id="pOthers" placeholder="기타 제약사항이나 궁금한 점을 적어주세요"></textarea></div>
                     <button class="btn-submit-plan" id="btnSubmitPlan" onclick="generatePlan()">맞춤 기획안 생성하기 ✨</button>
                 </div>
-
-                <div id="plannerResult" class="planner-result">
-                    <!-- AI response will be injected here -->
-                </div>
+                <div id="plannerResult" class="planner-result"></div>
             </div>
         </div>
 
-        <!-- Video Page -->
         <div id="page-video" class="page">
-            <div class="video-wrapper">
-                <button class="btn-back" onclick="showPage('dashboard')">
-                    ← 목록으로 돌아가기
-                </button>
-                <div class="video-container">
-                    <iframe id="videoFrame" src="" allowfullscreen allow="autoplay"></iframe>
+            <div class="page-wrapper">
+                <button class="btn-primary" style="width:auto; margin-bottom:20px; padding:10px 20px" onclick="showPage('dashboard')">← 목록으로 돌아가기</button>
+                <div style="aspect-ratio:16/9; background:#000; border-radius:var(--radius); overflow:hidden; border:1px solid var(--border)">
+                    <iframe id="videoFrame" style="width:100%; height:100%; border:none;" allowfullscreen></iframe>
                 </div>
-                <div class="video-info">
-                    <h2 id="videoTitle"></h2>
-                    <p id="videoDesc"></p>
-                </div>
-                <div class="nav-btns" style="margin-bottom:12px">
-                    <button class="btn-complete" id="btnComplete" onclick="toggleWatched()">
-                        ✓ 시청 완료로 표시
-                    </button>
-                </div>
-                <div class="nav-btns">
-                    <button class="btn-nav btn-prev" id="btnPrev" onclick="navigateLecture(-1)">← 이전 강의</button>
-                    <button class="btn-nav btn-next" id="btnNext" onclick="navigateLecture(1)">다음 강의 →</button>
-                </div>
+                <h2 id="videoTitle" style="margin-top:24px; font-size:1.5rem"></h2>
             </div>
         </div>
 
-        <!-- Chatbot UI -->
-        <div id="chatTooltip" class="chat-tooltip" style="display:none;">질문하기!</div>
-        <button id="chatBtn" class="chat-btn" style="display:none;" onclick="toggleChat()">💬</button>
+        <button class="chat-btn" onclick="toggleChat()">💬</button>
         <div id="chatWindow" class="chat-window">
-            <div class="chat-header">
-                <h3>🤖 AI 조교</h3>
-                <button class="chat-close" onclick="toggleChat()">✕</button>
-            </div>
+            <div style="padding:16px; background:var(--card); font-weight:bold; border-bottom:1px solid var(--border)">🤖 AI 조교</div>
             <div id="chatMessages" class="chat-messages">
-                <div class="chat-msg ai">안녕하세요! 강의 관련 궁금한 점을 자유롭게 질문해주세요 😊</div>
+                <div class="chat-msg ai">안녕하세요! 강의 관련 궁금한 점을 물어보세요 😊</div>
             </div>
             <div class="chat-input-area">
-                <textarea id="chatInput" placeholder="강의에 대해 궁금한 점을 물어보세요"
-                    onkeydown="handleChatKeydown(event)"></textarea>
-                <button id="chatSubmitBtn" onclick="sendChatMessage()">→</button>
+                <textarea id="chatInput" placeholder="질문하세요..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"></textarea>
+                <button onclick="sendChatMessage()" style="background:var(--point); border:none; color:#fff; padding:0 15px; border-radius:8px; cursor:pointer; font-weight:bold">Send</button>
             </div>
         </div>
-
     </div>
 
     <script>
-        /* ═══════════════════════════════════════════════════════════
-           ██████  CONFIG — 여기만 수정하세요
-           ═══════════════════════════════════════════════════════════ */
-        const CONFIG = {
-
-            /* 접근 코드 (대소문자 구분) */
-            ACCESS_CODE: "LECTURE2026",
-
-
-            /* 강의 목록
-               driveFileId: 구글 드라이브 파일 URL에서 /d/ 뒤의 ID를 복사해 넣으세요
-               예) https://drive.google.com/file/d/1aBcD.../view  →  "1aBcD..."
-            */
-            lectures: [
-                { id: 1, title: "1강. 콘텐츠 기획의 본질 만드는 것이 아닌 문제 해결", description: "", driveFileId: "1DdMMjBPxqhoTxwyI4mltySNihHC4MWOG" },
-                { id: 2, title: "2강. 페르소나를 넘어선 페인 포인트(Pain Point) 분석법", description: "", driveFileId: "1wSslbU4hs0NrqrHyROZlCbmYRsXRx8O3" },
-                { id: 3, title: "3강. 절대 마르지 않는 콘텐츠 아이디어 뽑는 법", description: "", driveFileId: "1XbthIhZLxl1IAk4YbSVDSe4HprTMcnW9" },
-                { id: 4, title: "4강. 팔리는 콘텐츠를 만드는 3단계 기획 프레임워크", description: "", driveFileId: "1LyL29KNYk-KFZ3H5YDj1bTJh5vu4wde4" },
-                { id: 5, title: "5강. 고객을 멈추게 만드는 후킹 기획의 기술", description: "", driveFileId: "1q7rEzMrtYCe4EO2CyLolStsFEsHYNKg8" },
-                { id: 6, title: "6강. 콘텐츠는 크게 2가지로 나뉜다 (정보성 vs 브랜딩)", description: "", driveFileId: "1gxKjFZqYP_QUVR8eR2f4RA9ysGvYygwN" },
-                { id: 7, title: "7강. 사람의 심리를 이용한 7가지 콘텐츠 기획법", description: "", driveFileId: "1b-IJq3xw5bXquCre9PNaUnqDUc7qWAkJ" },
-                { id: 8, title: "8강. 조회수는 우연, 전환은 설계. 콘텐츠 기획의 끝은 매출이다", description: "", driveFileId: "1jYTrtwsP1tqJyqv9N5_FBdLQvq3Wn8If" },
-                { id: 9, title: "9강. 콘텐츠의 조회수는 정해져 있다 - 표본의 법칙", description: "", driveFileId: "1iCEZPCZpKiTaOew0qHqMSGzDvKnTaa76" },
-                { id: 10, title: "10강. 편집 왕초보도 10분 만에 릴스 만들기 - 인스타 기능 & 리믹스 활용법", description: "", driveFileId: "1TZEkAZw6_dXZm0sN9YZM3p1K1-8phpJ6" },
-                { id: 11, title: "11강. 캡컷 릴스 편집의 기본 - 30분이면 프로처럼 편집하기", description: "", driveFileId: "1fdFNNj1N30lem5Y1eQ7xCB12E49_n6qU" },
-                { id: 12, title: "12강. 조회수 폭발하는 릴스 편집 공식 - 3초 법칙과 리텐션 편집", description: "", driveFileId: "1f1sp6IipRZCRAfybilpqSPwWAtViTGWQ" },
-                { id: 13, title: "13강. 콘텐츠 유형별 편집 템플릿 - 따라만 하면 되는 편집 레시피", description: "", driveFileId: "1_Q3B34nyPxmgP61cIZTKA4adshTiBB0F" },
-                { id: 14, title: "14강. 100만 바이럴 릴스의 공통점 - 성공하는 편집 패턴 분석", description: "", driveFileId: "1-evqEkVpCQAsQz_5p-MYhCuzobIIfL2-" },
-                { id: 15, title: "15강. AI를 활용한 콘텐츠 제작 시간 10배 효율화 방법", description: "", driveFileId: "1HZepRcfoYirGOmY4Td4_WqF2qlMrBOO_" },
-                { id: 16, title: "16강. AI를 활용한 레퍼런스 분석 및 100만 콘텐츠 기획법", description: "", driveFileId: "1K_tmkuzYBKxIDfbZsg5mw6t445UX0jLq" },
-                { id: 17, title: "17강. 실제 매출을 키워주는 찐팬을 만드는 인스타그램 운영 전략", description: "", driveFileId: "1Ffl4rEpTPC783JWaQ355yzuS7ewFpRYQ" }
-            ]
-
-        };
-
-        /* ── State ── */
-        let currentLectureId = null;
-        const LS_KEY = 'lrWatched';
-
-        function getWatched() {
-            try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; }
-            catch { return []; }
-        }
-
-        function isWatched(id) { return getWatched().includes(id); }
-
-        function setWatched(id, done) {
-            const watched = getWatched();
-            if (done && !watched.includes(id)) watched.push(id);
-            if (!done) {
-                const idx = watched.indexOf(id);
-                if (idx > -1) watched.splice(idx, 1);
-            }
-            localStorage.setItem(LS_KEY, JSON.stringify(watched));
-        }
-
-        function updateCompleteBtn() {
-            const btn = document.getElementById('btnComplete');
-            if (!btn) return;
-            const watched = isWatched(currentLectureId);
-            btn.classList.toggle('done', watched);
-            btn.innerHTML = watched ? '✅ 시청 완료됨 (취소하기)' : '✓ 시청 완료로 표시';
-        }
-
-        function toggleWatched() {
-            setWatched(currentLectureId, !isWatched(currentLectureId));
-            updateCompleteBtn();
-        }
-
-        function updateProgressBar() {
-            const total = CONFIG.lectures.length;
-            const done = getWatched().length;
-            const pct = Math.round((done / total) * 100);
-            document.getElementById('progressCount').textContent = `${done} / ${total} 완료`;
-            document.getElementById('progressFill').style.width = pct + '%';
-            document.getElementById('progressPct').textContent = pct + '%';
-        }
-
-        function checkAuth() { return sessionStorage.getItem('lrAuth') === CONFIG.ACCESS_CODE; }
-
-        document.getElementById('unlockBtn').addEventListener('click', attemptUnlock);
-        document.getElementById('codeInput').addEventListener('keydown', e => {
-            if (e.key === 'Enter') attemptUnlock();
-            document.getElementById('errorMsg').textContent = '';
-        });
+        const CONFIG = { ACCESS_CODE: "LECTURE2026", lectures: [
+            { id: 1, title: "1강. 콘텐츠 기획의 본질", driveFileId: "1DdMMjBPxqhoTxwyI4mltySNihHC4MWOG" },
+            { id: 2, title: "2강. 페인 포인트 분석법", driveFileId: "1wSslbU4hs0NrqrHyROZlCbmYRsXRx8O3" },
+            { id: 3, title: "3강. 아이디어 뽑는 법", driveFileId: "1XbthIhZLxl1IAk4YbSVDSe4HprTMcnW9" },
+            { id: 4, title: "4강. 3단계 기획 프레임워크", driveFileId: "1LyL29KNYk-KFZ3H5YDj1bTJh5vu4wde4" },
+            { id: 5, title: "5강. 후킹 기획의 기술", driveFileId: "1q7rEzMrtYCe4EO2CyLolStsFEsHYNKg8" },
+            { id: 6, title: "6강. 콘텐츠는 크게 2가지로 나뉜다", driveFileId: "1gxKjFZqYP_QUVR8eR2f4RA9ysGvYygwN" },
+            { id: 7, title: "7강. 사람의 심리를 이용한 기획법", driveFileId: "1b-IJq3xw5bXquCre9PNaUnqDUc7qWAkJ" },
+            { id: 8, title: "8강. 조회수는 우연, 전환은 설계", driveFileId: "1jYTrtwsP1tqJyqv9N5_FBdLQvq3Wn8If" },
+            { id: 9, title: "9강. 표본의 법칙", driveFileId: "1iCEZPCZpKiTaOew0qHqMSGzDvKnTaa76" },
+            { id: 10, title: "10강. 릴스 만들기 입문", driveFileId: "1TZEkAZw6_dXZm0sN9YZM3p1K1-8phpJ6" },
+            { id: 11, title: "11강. 캡컷 릴스 편집 기본", driveFileId: "1fdFNNj1N30lem5Y1eQ7xCB12E49_n6qU" },
+            { id: 12, title: "12강. 조회수 폭발 편집 공식", driveFileId: "1f1sp6IipRZCRAfybilpqSPwWAtViTGWQ" },
+            { id: 13, title: "13강. 콘텐츠 유형별 편집 템플릿", driveFileId: "1_Q3B34nyPxmgP61cIZTKA4adshTiBB0F" },
+            { id: 14, title: "14강. 100만 바이럴 릴스의 공통점", driveFileId: "1-evqEkVpCQAsQz_5p-MYhCuzobIIfL2-" },
+            { id: 15, title: "15강. AI 활용 제작 효율화", driveFileId: "1HZepRcfoYirGOmY4Td4_WqF2qlMrBOO_" },
+            { id: 16, title: "16강. 100만 콘텐츠 기획법", driveFileId: "1K_tmkuzYBKxIDfbZsg5mw6t445UX0jLq" },
+            { id: 17, title: "17강. 실제 매출을 키워주는 전략", driveFileId: "1Ffl4rEpTPC783JWaQ355yzuS7ewFpRYQ" }
+        ]};
 
         function attemptUnlock() {
-            const val = document.getElementById('codeInput').value.trim();
-            if (val === CONFIG.ACCESS_CODE) {
-                sessionStorage.setItem('lrAuth', CONFIG.ACCESS_CODE);
-                const lock = document.getElementById('lockScreen');
-                lock.classList.add('fade-out');
-                setTimeout(() => {
-                    lock.style.display = 'none';
-                    document.getElementById('app').style.display = 'block';
-                    document.getElementById('chatBtn').style.display = 'flex';
-                    loadChatHistory();
-                    renderDashboard();
-                }, 500);
-            } else {
-                const err = document.getElementById('errorMsg');
-                err.textContent = '❌ 잘못된 코드입니다.';
-                document.getElementById('codeInput').value = '';
-                document.getElementById('codeInput').focus();
-            }
+            if (document.getElementById('codeInput').value.trim() === CONFIG.ACCESS_CODE) {
+                sessionStorage.setItem('lrAuth', 'true');
+                document.getElementById('lockScreen').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+                renderDashboard();
+            } else { alert("접근 코드가 틀렸습니다."); }
         }
+        document.getElementById('unlockBtn').onclick = attemptUnlock;
+        document.getElementById('codeInput').onkeydown = e => { if(e.key==='Enter') attemptUnlock(); };
 
-        function logout() {
-            sessionStorage.clear();
-            location.reload();
-        }
+        function logout() { sessionStorage.clear(); location.reload(); }
 
         function showPage(name) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            const target = document.getElementById('page-' + name);
-            if (target) target.classList.add('active');
-            
-            document.querySelectorAll('.header-nav button').forEach(btn => btn.classList.remove('active'));
-            const navBtn = document.getElementById('nav-' + name);
-            if (navBtn) navBtn.classList.add('active');
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            if (name !== 'video') {
-                document.getElementById('videoFrame').src = '';
-                if (name === 'dashboard') renderDashboard();
-            }
+            document.getElementById('page-' + name).classList.add('active');
+            document.querySelectorAll('.header-nav button').forEach(b => b.classList.remove('active'));
+            if(document.getElementById('nav-'+name)) document.getElementById('nav-'+name).classList.add('active');
+            window.scrollTo(0,0);
+            if(name !== 'video') document.getElementById('videoFrame').src = '';
         }
 
         function renderDashboard() {
-            updateProgressBar();
-            const grid = document.getElementById('lectureGrid');
-            grid.innerHTML = CONFIG.lectures.map(lec => {
-                const done = isWatched(lec.id);
-                return `
-                    <div class="lecture-card${done ? ' watched' : ''}" onclick="playLecture(${lec.id})">
-                      <div class="card-thumbnail">
-                        <span class="card-num">Lec ${lec.id}</span>
-                        ${done ? '<span class="watched-badge">✓ 완료</span>' : ''}
-                        <div class="play-icon">▶</div>
-                      </div>
-                      <div class="card-body">
-                        <div class="card-title">${escHtml(lec.title)}</div>
-                        <div class="card-desc">${escHtml(lec.description)}</div>
-                      </div>
-                      <div class="card-footer${done ? ' done' : ''}">
-                        ${done ? '✅ 시청 완료' : '▶ 강의 시청하기'}
-                      </div>
-                    </div>
-                `;
-            }).join('');
+            document.getElementById('lectureGrid').innerHTML = CONFIG.lectures.map(l => `
+                <div class="lecture-card" onclick="playLecture(${l.id})">
+                    <div class="card-thumbnail">Lec ${l.id}</div>
+                    <div class="card-body"><div class="card-title">${l.title}</div></div>
+                    <div class="card-footer">▶ 강의 시청하기</div>
+                </div>
+            `).join('');
         }
 
         function playLecture(id) {
-            const lec = CONFIG.lectures.find(l => l.id === id);
-            if (!lec) return;
-            currentLectureId = id;
-            document.getElementById('videoTitle').textContent = lec.title;
-            document.getElementById('videoDesc').textContent = lec.description;
-            document.getElementById('videoFrame').src = `https://drive.google.com/file/d/${lec.driveFileId}/preview`;
-            const idx = CONFIG.lectures.findIndex(l => l.id === id);
-            document.getElementById('btnPrev').disabled = idx === 0;
-            document.getElementById('btnNext').disabled = idx === CONFIG.lectures.length - 1;
+            const l = CONFIG.lectures.find(x => x.id === id);
+            document.getElementById('videoTitle').textContent = l.title;
+            document.getElementById('videoFrame').src = `https://drive.google.com/file/d/${l.driveFileId}/preview`;
             showPage('video');
-            updateCompleteBtn();
         }
 
-        function navigateLecture(delta) {
-            const idx = CONFIG.lectures.findIndex(l => l.id === currentLectureId);
-            const next = CONFIG.lectures[idx + delta];
-            if (next) playLecture(next.id);
-        }
-
-        function escHtml(str) {
-            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        }
-
-        /* ── Knowledge Base ── */
-        let cachedKB = null;
-        async function getKnowledgeBase() {
-            if (cachedKB) return cachedKB;
-            try {
-                const res = await fetch('/knowledge-base.md');
-                if (res.ok) { cachedKB = await res.text(); return cachedKB; }
-            } catch(e) {}
-            return "";
-        }
-
-        /* ── Chat Logic ── */
-        let chatHistory = [];
-        const chatMessages = document.getElementById('chatMessages');
-        const chatInput = document.getElementById('chatInput');
-        const chatSubmitBtn = document.getElementById('chatSubmitBtn');
-
-        function loadChatHistory() {
-            const saved = sessionStorage.getItem('lrChatHistory');
-            if (saved) chatHistory = JSON.parse(saved);
-            chatMessages.innerHTML = '';
-            if (chatHistory.length > 0) {
-                chatHistory.forEach(msg => {
-                    const el = document.createElement('div');
-                    el.className = 'chat-msg ' + (msg.role === 'user' ? 'user' : 'ai');
-                    el.textContent = msg.content;
-                    chatMessages.appendChild(el);
-                });
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            } else {
-                chatMessages.innerHTML = '<div class="chat-msg ai">안녕하세요! 강의 관련 궁금한 점을 질문해주세요 😊</div>';
-            }
-        }
+        async function getKB() { try { const r = await fetch('/knowledge-base.md'); return r.ok ? await r.text() : ""; } catch(e) {return "";} }
 
         async function sendChatMessage() {
-            const text = chatInput.value.trim();
-            if (!text) return;
-            chatInput.value = '';
-            const userEl = document.createElement('div');
-            userEl.className = 'chat-msg user';
-            userEl.textContent = text;
-            chatMessages.appendChild(userEl);
-            chatHistory.push({ role: 'user', content: text });
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-
-            const typingEl = document.createElement('div');
-            typingEl.className = 'typing-indicator';
-            typingEl.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
-            chatMessages.appendChild(typingEl);
-
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim(); if(!text) return;
+            input.value = '';
+            const msgBox = document.getElementById('chatMessages');
+            msgBox.innerHTML += `<div class="chat-msg user">${text}</div>`;
+            const aiEl = document.createElement('div'); aiEl.className = 'chat-msg ai';
+            msgBox.appendChild(aiEl); msgBox.scrollTop = msgBox.scrollHeight;
+            
             try {
-                const kb = await getKnowledgeBase();
+                const kb = await getKB();
                 const res = await fetch('/.netlify/functions/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ messages: chatHistory, knowledgeBase: kb })
+                    method: 'POST', body: JSON.stringify({ messages: [{role:'user', content:text}], knowledgeBase: kb })
                 });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error || "서버 오류");
-                chatMessages.removeChild(typingEl);
-                const aiEl = document.createElement('div');
-                aiEl.className = 'chat-msg ai';
-                aiEl.textContent = data.answer;
-                chatMessages.appendChild(aiEl);
-                chatHistory.push({ role: 'model', content: data.answer });
-                sessionStorage.setItem('lrChatHistory', JSON.stringify(chatHistory));
-            } catch (e) {
-                if (chatMessages.contains(typingEl)) chatMessages.removeChild(typingEl);
-                alert("오류: " + e.message);
-            }
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+                const reader = res.body.getReader();
+                const decoder = new TextDecoder();
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    aiEl.textContent += decoder.decode(value);
+                    msgBox.scrollTop = msgBox.scrollHeight;
+                }
+            } catch(e) { aiEl.textContent = "오류 발생: " + e.message; }
         }
 
-        function handleChatKeydown(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); } }
-        function toggleChat() { document.getElementById('chatWindow').classList.toggle('open'); }
-
-        /* ── Planner Logic ── */
         async function generatePlan() {
-            const concept = document.getElementById('pConcept').value.trim();
-            const direction = document.getElementById('pDirection').value.trim();
-            const target = document.getElementById('pTarget').value.trim();
-            const purpose = document.getElementById('pPurpose').value.trim();
-            const price = document.getElementById('pPrice').value.trim();
-            const benchmark = document.getElementById('pBenchmark').value.trim();
-            const others = document.getElementById('pOthers').value.trim();
-
-            if (!concept || !direction || !target || !purpose || !price) {
-                alert("7번 항목을 제외한 모든 필수 항목을 입력해주세요!"); return;
-            }
-
             const btn = document.getElementById('btnSubmitPlan');
-            const resultBox = document.getElementById('plannerResult');
-            btn.disabled = true;
-            btn.textContent = "AI 기획안 작성 중... ⏳";
-            resultBox.style.display = 'block';
-            resultBox.innerHTML = "<p style='color: var(--muted); text-align: center; margin-top: 20px;'>분석 중입니다...</p>";
-
+            const result = document.getElementById('plannerResult');
+            btn.disabled = true; result.style.display = 'block'; result.innerHTML = "분석 중... ⏳";
             try {
-                const kb = await getKnowledgeBase();
-                const res = await fetch('/.netlify/functions/planner', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ concept, direction, target, purpose, price, benchmark, others, knowledgeBase: kb })
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error || "서버 오류");
-                resultBox.innerHTML = marked.parse(data.answer);
-            } catch (e) {
-                resultBox.innerHTML = "<p style='color: #e94560;'>오류: " + e.message + "</p>";
-            } finally {
-                btn.disabled = false;
-                btn.textContent = "맞춤 기획안 다시 생성하기 ✨";
-            }
+                const body = {
+                    concept: document.getElementById('pConcept').value,
+                    direction: document.getElementById('pDirection').value,
+                    target: document.getElementById('pTarget').value,
+                    purpose: document.getElementById('pPurpose').value,
+                    price: document.getElementById('pPrice').value,
+                    benchmark: document.getElementById('pBenchmark').value,
+                    others: document.getElementById('pOthers').value,
+                    knowledgeBase: await getKB()
+                };
+                const res = await fetch('/.netlify/functions/planner', { method: 'POST', body: JSON.stringify(body) });
+                const reader = res.body.getReader();
+                const decoder = new TextDecoder();
+                result.innerHTML = "";
+                let full = "";
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    full += decoder.decode(value);
+                    result.innerHTML = marked.parse(full);
+                }
+            } catch(e) { result.innerHTML = "오류 발생: " + e.message; }
+            finally { btn.disabled = false; btn.textContent = "맞춤 기획안 다시 생성하기 ✨"; }
         }
 
-        /* ── Init ── */
-        (function init() {
-            if (checkAuth()) {
-                document.getElementById('lockScreen').style.display = 'none';
-                document.getElementById('app').style.display = 'block';
-                document.getElementById('chatBtn').style.display = 'flex';
-                loadChatHistory();
-                renderDashboard();
-            }
-        })();
+        function toggleChat() { document.getElementById('chatWindow').classList.toggle('open'); }
+        if(sessionStorage.getItem('lrAuth')) { document.getElementById('lockScreen').style.display='none'; document.getElementById('app').style.display='block'; renderDashboard(); }
     </script>
 </body>
 </html>
