@@ -1,8 +1,6 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import fs from "fs/promises";
-import path from "path";
+import { GoogleGenerativeAI } from "npm:@google/generative-ai";
 
-export default async (req, context) => {
+export default async (req) => {
     if (req.method === "OPTIONS") {
         return new Response("OK", {
             headers: {
@@ -13,8 +11,7 @@ export default async (req, context) => {
         });
     }
 
-    // API 키 누락 즉시 체크
-    if (!process.env.GEMINI_API_KEY) {
+    if (!Netlify.env.get("GEMINI_API_KEY")) {
         return new Response(
             JSON.stringify({ error: "환경 변수 GEMINI_API_KEY가 설정되지 않았습니다." }),
             { status: 500, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
@@ -23,23 +20,10 @@ export default async (req, context) => {
 
     try {
         const body = await req.json();
-        const messages = body.messages;
+        const { messages, knowledgeBase } = body;
 
         if (!messages || messages.length === 0) {
             return new Response("Bad Request", { status: 400, headers: { "Access-Control-Allow-Origin": "*" } });
-        }
-
-        // 지식 베이스 파일 로드 (import.meta.url 없이, 환경별 경로 탐색)
-        let knowledgeBase = "";
-        const possiblePaths = [
-            "/var/task/knowledge-base.md",
-            path.join(process.cwd(), "knowledge-base.md"),
-        ];
-        for (const p of possiblePaths) {
-            try {
-                const content = await fs.readFile(p, "utf-8");
-                if (content) { knowledgeBase = content; break; }
-            } catch (e) { /* 다음 경로 시도 */ }
         }
 
         const systemPrompt = `당신은 '조쉬의 콘텐츠 마스터클래스'의 AI 조교입니다.
@@ -54,14 +38,13 @@ export default async (req, context) => {
 - **중요**: 절대 이모지(Emoji)를 사용하지 마세요.
 - **중요**: 절대 볼드체(**텍스트**) 등 텍스트 강조 마크다운을 사용하지 마세요. 오직 평문으로만 작성하세요.
 - 친근한 존댓말("~해요" 체)을 사용하세요.
-- 답변은 간결하게 (3-5문장), 필요 시 구체적 예시 포함.
 - 절대 강의 영상 링크나 다운로드 방법을 안내하지 마세요.
 - 강의 주제(콘텐츠 기획, 마케팅, SNS, 편집, AI 활용)와 완전히 무관한 질문에는 정중히 안내하세요.
 
 [지식 베이스]
 ${knowledgeBase || "지식 베이스 없음 — 일반 지식으로 답변하세요."}`;
 
-        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        const genAI = new GoogleGenerativeAI(Netlify.env.get("GEMINI_API_KEY"));
         const model = genAI.getGenerativeModel({
             model: "gemini-2.5-flash",
             systemInstruction: systemPrompt
@@ -93,16 +76,16 @@ ${knowledgeBase || "지식 베이스 없음 — 일반 지식으로 답변하세
                     controller.error(streamErr);
                 }
 
-                // 로깅 (스트림과 완전 분리, 실패해도 무시)
+                // 로깅
                 try {
                     const originUrl = new URL(req.url).origin;
-                    await fetch(`${originUrl}/.netlify/functions/log`, {
+                    await fetch(`${originUrl}/log`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ question: lastMessage, answer: fullAnswer, _time: rowId })
                     });
                 } catch (logErr) {
-                    console.error("Logging failed (non-critical):", logErr);
+                    console.error("Logging failed:", logErr);
                 }
             }
         });
@@ -124,3 +107,5 @@ ${knowledgeBase || "지식 베이스 없음 — 일반 지식으로 답변하세
         );
     }
 };
+
+export const config = { path: "/chat" };

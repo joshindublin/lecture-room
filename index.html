@@ -1574,6 +1574,22 @@
             return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         }
 
+        /* ── Knowledge Base Fetching ── */
+        let cachedKnowledgeBase = null;
+        async function getKnowledgeBase() {
+            if (cachedKnowledgeBase) return cachedKnowledgeBase;
+            try {
+                const res = await fetch('/knowledge-base.md');
+                if (res.ok) {
+                    cachedKnowledgeBase = await res.text();
+                    return cachedKnowledgeBase;
+                }
+            } catch(e) {
+                console.warn("지식 베이스 로드 실패", e);
+            }
+            return "";
+        }
+
         /* ── Chatbot Logic ── */
         let chatHistory = [];
         const chatMessages = document.getElementById('chatMessages');
@@ -1658,7 +1674,7 @@
             sessionStorage.setItem('lrChatHistory', JSON.stringify(chatHistory));
 
             try {
-                await fetch('/.netlify/functions/log', {
+                await fetch('/log', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ rowId, feedback, comment })
@@ -1696,10 +1712,11 @@
             let rowId = null;
 
             try {
-                const res = await fetch('/.netlify/functions/chat', {
+                const kb = await getKnowledgeBase();
+                const res = await fetch('/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ messages: chatHistory })
+                    body: JSON.stringify({ messages: chatHistory, knowledgeBase: kb })
                 });
 
                 if (!res.ok) {
@@ -1779,10 +1796,11 @@
             resultBox.innerHTML = "<p style='color: var(--muted); text-align: center; margin-top: 20px;'>수집된 데이터를 분석하고 있습니다...</p>";
 
             try {
-                const res = await fetch('/.netlify/functions/planner', {
+                const kb = await getKnowledgeBase();
+                const res = await fetch('/planner', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ concept, direction, target, purpose, price, benchmark })
+                    body: JSON.stringify({ concept, direction, target, purpose, price, benchmark, knowledgeBase: kb })
                 });
 
                 if (!res.ok) {
