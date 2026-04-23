@@ -19,7 +19,7 @@ export const handler = async (event, context) => {
         const { concept, direction, target, purpose, price, benchmark, others, knowledgeBase } = body;
 
         const systemPrompt = `당신은 '조쉬의 콘텐츠 마스터클래스'의 수석 콘텐츠 기획자입니다.
-수강생의 계정 정보를 분석하고 조쉬의 철학을 바탕으로 상세한 전략을 제안하세요.
+수강생의 계정 정보를 분석하고 조쉬의 철학을 바탕으로 전략을 제안하세요.
 
 [수강생 정보]
 - 컨셉: ${concept}
@@ -43,12 +43,9 @@ export const handler = async (event, context) => {
 [지식 베이스]
 ${knowledgeBase || ""}`;
 
-        // API 버전을 v1으로 명시하여 404 에러 방지
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel(
-            { model: "gemini-1.5-flash" }, 
-            { apiVersion: 'v1' }
-        );
+        // 처음 성공했던 방식 그대로: 모델명만 지정하고 버전 오버라이드는 하지 않음
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const result = await model.generateContent(systemPrompt);
         const text = result.response.text();
@@ -60,7 +57,6 @@ ${knowledgeBase || ""}`;
         };
     } catch (error) {
         console.error("Planner Error:", error);
-        // 에러 발생 시 상세 메시지를 클라이언트에 전달
         return {
             statusCode: 500,
             headers,

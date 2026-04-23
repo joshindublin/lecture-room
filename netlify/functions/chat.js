@@ -23,10 +23,10 @@ export const handler = async (event, context) => {
 ${knowledgeBase || ""}`;
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel(
-            { model: "gemini-1.5-flash" },
-            { apiVersion: 'v1' }
-        );
+        const model = genAI.getGenerativeModel({ 
+            model: "gemini-1.5-flash", 
+            systemInstruction: systemPrompt 
+        });
 
         const history = messages.slice(0, -1).map(msg => ({
             role: msg.role === "user" ? "user" : "model",
