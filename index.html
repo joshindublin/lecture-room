@@ -1185,7 +1185,7 @@
                     </div>
                     <div class="form-row">
                         <label for="pConcept">1. 계정 컨셉 및 주제</label>
-                        <input type="text" id="pConcept" placeholder="예: 직장인을 위한 실전 엑셀 꿀팁, 다이어트 식단 레시피 등" />
+                        <input type="text" id="pConcept" placeholder="예: 직장인을 위한 실전 꿀팁, 다이어트 식단 레시피 등" />
                     </div>
                     <div class="form-row">
                         <label for="pDirection">2. 계정 운영 방향성 (현재 상황/고민)</label>
@@ -1206,6 +1206,10 @@
                     <div class="form-row">
                         <label for="pBenchmark">6. 벤치마킹 하고 싶은 스타일 (선택 사항)</label>
                         <input type="text" id="pBenchmark" placeholder="예: '슈카월드'식 썰풀이 (AI는 링크 접속이 불가하므로 특징을 적어주세요)" />
+                    </div>
+                    <div class="form-row">
+                        <label for="pOthers">7. 기타 추가로 하고 싶은 말 (선택 사항)</label>
+                        <textarea id="pOthers" placeholder="예: 저는 편집 실력이 부족해서 컷 편집 위주로만 하고 싶어요."></textarea>
                     </div>
                     <button class="btn-submit-plan" id="btnSubmitPlan" onclick="generatePlan()">맞춤 기획안 생성하기 ✨</button>
                 </div>
@@ -1719,9 +1723,10 @@
                     body: JSON.stringify({ messages: chatHistory, knowledgeBase: kb })
                 });
 
+                const data = await res.json();
+
                 if (!res.ok) {
-                    const errBody = await res.text().catch(() => "");
-                    throw new Error("서버 오류 " + res.status + ": " + errBody);
+                    throw new Error(data.error || "서버 오류 " + res.status);
                 }
 
                 if (chatMessages.contains(typingEl)) {
@@ -1729,7 +1734,6 @@
                 }
                 chatMessages.appendChild(aiEl);
 
-                const data = await res.json();
                 const fullAiAnswer = data.answer || "답변을 가져오지 못했습니다.";
                 aiEl.textContent = fullAiAnswer;
 
@@ -1741,13 +1745,12 @@
 
             } catch (error) {
                 console.error(error);
-                // 실패한 user 메시지를 chatHistory에서 제거 (연속 user role 누적 방지)
                 chatHistory.pop();
                 sessionStorage.setItem('lrChatHistory', JSON.stringify(chatHistory));
                 if (chatMessages.contains(typingEl)) {
                     chatMessages.removeChild(typingEl);
                 }
-                aiEl.textContent = "죄송합니다. 오류가 발생하여 답변할 수 없습니다.";
+                aiEl.textContent = "오류: " + error.message;
                 chatMessages.appendChild(aiEl);
             }
 
@@ -1766,9 +1769,10 @@
             const purpose = document.getElementById('pPurpose').value.trim();
             const price = document.getElementById('pPrice').value.trim();
             const benchmark = document.getElementById('pBenchmark').value.trim();
+            const others = document.getElementById('pOthers').value.trim();
 
             if (!concept || !direction || !target || !purpose || !price) {
-                alert("벤치마킹 계정을 제외한 모든 항목을 구체적으로 입력해주세요!");
+                alert("7번 항목을 제외한 모든 항목을 구체적으로 입력해주세요!");
                 return;
             }
 
@@ -1785,7 +1789,7 @@
                 const res = await fetch('/.netlify/functions/planner', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ concept, direction, target, purpose, price, benchmark, knowledgeBase: kb })
+                    body: JSON.stringify({ concept, direction, target, purpose, price, benchmark, others, knowledgeBase: kb })
                 });
 
                 const data = await res.json();
