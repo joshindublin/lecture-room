@@ -1195,6 +1195,14 @@
                         <label for="pPurpose">4. 원하는 마케팅 효과 및 목적 (전환 목표)</label>
                         <input type="text" id="pPurpose" placeholder="예: 전자책 판매 랜딩페이지 유입, 1:1 컨설팅 문의 DM 유도" />
                     </div>
+                    <div class="form-row">
+                        <label for="pPrice">5. 판매 상품의 형태 및 가격대 (없다면 '없음')</label>
+                        <input type="text" id="pPrice" placeholder="예: 3만원대 전자책, 100만원대 1:1 컨설팅, 오프라인 매장 방문 등" />
+                    </div>
+                    <div class="form-row">
+                        <label for="pBenchmark">6. 벤치마킹 하고 싶은 계정 (선택 사항)</label>
+                        <input type="text" id="pBenchmark" placeholder="예: @josh_content 처럼 정보와 썰을 섞는 톤앤매너" />
+                    </div>
                     <button class="btn-submit-plan" id="btnSubmitPlan" onclick="generatePlan()">맞춤 기획안 생성하기 ✨</button>
                 </div>
 
@@ -1750,9 +1758,11 @@
             const direction = document.getElementById('pDirection').value.trim();
             const target = document.getElementById('pTarget').value.trim();
             const purpose = document.getElementById('pPurpose').value.trim();
+            const price = document.getElementById('pPrice').value.trim();
+            const benchmark = document.getElementById('pBenchmark').value.trim();
 
-            if (!concept || !direction || !target || !purpose) {
-                alert("모든 항목을 구체적으로 입력해주세요!");
+            if (!concept || !direction || !target || !purpose || !price) {
+                alert("벤치마킹 계정을 제외한 모든 항목을 구체적으로 입력해주세요!");
                 return;
             }
 
@@ -1768,7 +1778,7 @@
                 const res = await fetch('/.netlify/functions/planner', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ concept, direction, target, purpose })
+                    body: JSON.stringify({ concept, direction, target, purpose, price, benchmark })
                 });
 
                 if (!res.ok) {

@@ -23,9 +23,9 @@ export default async (req, context) => {
 
     try {
         const body = await req.json();
-        const { concept, direction, target, purpose } = body;
+        const { concept, direction, target, purpose, price, benchmark } = body;
 
-        if (!concept || !direction || !target || !purpose) {
+        if (!concept || !direction || !target || !purpose || !price) {
             return new Response("Bad Request", { status: 400, headers: { "Access-Control-Allow-Origin": "*" } });
         }
 
@@ -56,21 +56,26 @@ export default async (req, context) => {
 - 현재 고민 및 방향성: ${direction}
 - 타겟 고객: ${target}
 - 목표하는 마케팅 효과/전환: ${purpose}
+- 판매 상품 및 가격대: ${price}
+- 벤치마킹 계정/톤앤매너: ${benchmark || "없음"}
 
 [출력 가이드라인]
-반드시 다음 4가지 항목을 포함하여 마크다운 형식으로 작성해주세요. 가독성을 높이기 위해 적절한 이모지와 강조(bold)를 사용하세요.
+반드시 다음 4가지 항목을 포함하여 작성해주세요. 
+- **중요**: 절대 이모지(Emoji)를 사용하지 마세요.
+- **중요**: 절대 볼드체(**텍스트**) 등 텍스트 강조 마크다운을 사용하지 마세요. 오직 평문으로만 작성하세요.
+- **중요**: 답변은 오직 제공된 [지식 베이스]에 담긴 조쉬의 노하우와 철학을 기반으로 작성해야 합니다.
 
-1. 🎯 타겟 고객의 진짜 페인 포인트 진단
+1. 타겟 고객의 진짜 페인 포인트 진단
    - 피상적인 문제가 아니라, 타겟 고객이 밤에 잠 못 이루며 고민할 진짜 문제를 2-3가지 구체화해서 진단해주세요.
 
-2. 🧲 당장 쓸 수 있는 추천 후킹(Hooking) 주제 3가지
-   - 고객이 스크롤을 멈출 수밖에 없는 강력한 첫 문장(카피)과 그에 맞는 주제. (예: "이렇게 하면 망합니다" 같은 직관적 형태)
+2. 당장 쓸 수 있는 추천 후킹(Hooking) 주제 3가지
+   - 고객이 스크롤을 멈출 수밖에 없는 강력한 첫 문장(카피)과 그에 맞는 주제. (벤치마킹 계정이 있다면 그 톤앤매너를 참고)
 
-3. 🎬 최적의 콘텐츠 포맷 제안 (스토리텔링 / 정보성 / 감성 중 택 1)
+3. 최적의 콘텐츠 포맷 제안 (스토리텔링 / 정보성 / 감성 중 택 1)
    - 세 가지 중 현재 수강생의 '전환 목표'를 이루기에 가장 적합한 방향을 딱 하나 골라주고, 조쉬의 관점에서 그 이유를 설명해주세요.
 
-4. 🚀 랜딩페이지 유입 & 전환 시나리오 (Funnel)
-   - 릴스나 인스타 게시물을 보고 어떻게 매끄럽게 원하는 목적지(${purpose})까지 이동하게 만들지 구체적인 액션 플랜(예: 캡션 내 CTA, DM 자동화, 프로필 링크 세팅, 스토리 연계 등)을 제안해주세요.
+4. 랜딩페이지 유입 & 전환 시나리오 (Funnel)
+   - 가격대(${price})를 고려하여, 릴스나 인스타 게시물을 보고 어떻게 매끄럽게 원하는 목적지(${purpose})까지 이동하게 만들지 구체적인 액션 플랜(예: 캡션 내 CTA, DM 자동화, 프로필 링크 세팅 등)을 제안해주세요.
 
 [지식 베이스 (조쉬의 노하우)]
 ${knowledgeBase || "지식 베이스 정보가 없습니다."}`;
@@ -81,7 +86,11 @@ ${knowledgeBase || "지식 베이스 정보가 없습니다."}`;
             systemInstruction: "당신은 냉철하고 분석적인 콘텐츠 마케팅 전문가이자 조쉬의 페르소나를 가진 기획자입니다."
         });
 
-        const result = await model.generateContentStream(systemPrompt);
+        // maxOutputTokens를 크게 설정하여 답변 잘림 방지
+        const result = await model.generateContentStream({
+            contents: [{ role: "user", parts: [{ text: systemPrompt }] }],
+            generationConfig: { maxOutputTokens: 8192 }
+        });
 
         const stream = new ReadableStream({
             async start(controller) {
