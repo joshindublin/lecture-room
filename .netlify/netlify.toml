@@ -1,0 +1,31 @@
+functionsDirectory = "/Users/josh-kim/Library/CloudStorage/GoogleDrive-josh@socialable.co.kr/내 드라이브/00. 강의 VOD/[유료-강의 VOD] 조쉬의 콘텐츠 마스터클래스/netlify/functions"
+functionsDirectoryOrigin = "config-v1"
+plugins = []
+headers = []
+redirects = []
+
+[build]
+publish = "/Users/josh-kim/Library/CloudStorage/GoogleDrive-josh@socialable.co.kr/내 드라이브/00. 강의 VOD/[유료-강의 VOD] 조쉬의 콘텐츠 마스터클래스"
+publishOrigin = "config"
+functions = "/Users/josh-kim/Library/CloudStorage/GoogleDrive-josh@socialable.co.kr/내 드라이브/00. 강의 VOD/[유료-강의 VOD] 조쉬의 콘텐츠 마스터클래스/netlify/functions"
+
+[build.environment]
+NODE_VERSION = "20"
+
+[build.processing]
+
+[build.processing.css]
+
+[build.processing.html]
+
+[build.processing.images]
+
+[build.processing.js]
+
+[build.services]
+
+[functions]
+
+[functions."*"]
+node_bundler = "esbuild"
+timeout = 26.0

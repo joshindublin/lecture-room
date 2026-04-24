@@ -216,6 +216,26 @@
             </div>
         </div>
 
+        <div id="page-checker" class="page">
+            <div class="page-wrapper">
+                <div style="margin-bottom:32px">
+                    <h2 style="font-size:2rem; font-weight:900">🔍 실전 <em>릴스 기획 점검</em></h2>
+                    <p style="color:var(--muted)">조쉬가 직접 기획안을 점검해 드리는 듯한 정밀 리포트를 제공합니다</p>
+                </div>
+                <div class="planner-form">
+                    <div style="background: rgba(233, 69, 96, 0.1); border: 1px solid rgba(233, 69, 96, 0.3); padding: 18px; border-radius: 8px; font-size:0.92rem; border-left: 4px solid var(--point);">
+                        💡 도입-전개-결말의 흐름이 논리적인지, 후킹이 강력한지 분석해 드립니다.
+                    </div>
+                    <div class="form-row"><label>1. 후킹 제목 (첫 문장)</label><input type="text" id="cHook" placeholder="사람들을 멈추게 할 강력한 한 문장" /></div>
+                    <div class="form-row"><label>2. 릴스 전체 대본</label><textarea id="cScript" style="min-height:150px" placeholder="도입-전개-결말 전체 내용을 적어주세요"></textarea></div>
+                    <div class="form-row"><label>3. 릴스 캡션 (본문)</label><textarea id="cCaption" placeholder="영상 하단에 들어갈 상세 설명 문구"></textarea></div>
+                    <div class="form-row"><label>4. 특별히 신경 쓴 부분 (선택)</label><input type="text" id="cFocus" placeholder="어떤 효과를 노리고 기획하셨나요?" /></div>
+                    <button class="btn-submit-plan" id="btnSubmitCheck" onclick="generateCheck()">기획 점검 시작하기 🔍</button>
+                </div>
+                <div id="checkerResult" class="planner-result"></div>
+            </div>
+        </div>
+
         <div id="page-video" class="page">
             <div class="page-wrapper">
                 <button class="btn-primary" style="width:auto; margin-bottom:20px; padding:10px 24px" onclick="showPage('dashboard')">← 목록으로 돌아가기</button>
@@ -363,6 +383,33 @@
                 }
             } catch(e) { result.innerHTML = "<p style='color:var(--point); padding:20px;'>오류 발생: " + e.message + "</p>"; }
             finally { btn.disabled = false; btn.textContent = "맞춤 기획안 다시 생성하기 ✨"; }
+        }
+
+        async function generateCheck() {
+            const btn = document.getElementById('btnSubmitCheck');
+            const result = document.getElementById('checkerResult');
+            btn.disabled = true; result.style.display = 'block'; result.innerHTML = "<p style='text-align:center; padding:30px;'>조쉬의 시선으로 정밀 점검 중... ⏳</p>";
+            try {
+                const body = {
+                    hook: document.getElementById('cHook').value,
+                    script: document.getElementById('cScript').value,
+                    caption: document.getElementById('cCaption').value,
+                    focus: document.getElementById('cFocus').value,
+                    knowledgeBase: await getKB()
+                };
+                const res = await fetch('/.netlify/functions/reels-check', { method: 'POST', body: JSON.stringify(body) });
+                const reader = res.body.getReader();
+                const decoder = new TextDecoder();
+                result.innerHTML = "";
+                let full = "";
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    full += decoder.decode(value);
+                    result.innerHTML = marked.parse(full);
+                }
+            } catch(e) { result.innerHTML = "<p style='color:var(--point); padding:20px;'>오류 발생: " + e.message + "</p>"; }
+            finally { btn.disabled = false; btn.textContent = "릴스 기획안 다시 점검하기 🔍"; }
         }
 
         function toggleChat() { document.getElementById('chatWindow').classList.toggle('open'); }
