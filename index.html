@@ -7,26 +7,27 @@
     <title>My Lecture Room</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
-        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Noto+Sans+KR:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         /* ── Reset & Base ── */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
-            --bg: #1a1a2e;
-            --card: #16213e;
-            --accent: #0f3460;
-            --point: #e94560;
-            --point-dim: #c73652;
-            --text: #e8eaf0;
-            --muted: #8b92a9;
-            --border: rgba(255, 255, 255, 0.07);
-            --radius: 14px;
-            --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --bg: #000000;
+            --card: #141414;
+            --accent: #414141;
+            --point: #ffde59;
+            --point-dim: #cca828;
+            --text: #ffffff;
+            --text-dark: #151515;
+            --muted: #a0a0a0;
+            --border: rgba(65, 65, 65, 0.8);
+            --radius: 8px;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.5);
         }
         html { scroll-behavior: smooth; }
-        body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.7; }
+        body { font-family: 'Inter', 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.7; }
+        h1, h2, h3 { font-family: 'Inter', 'Noto Sans KR', sans-serif; letter-spacing: -0.02em; }
 
         /* ── Scrollbar ── */
         ::-webkit-scrollbar { width: 6px; }
@@ -59,24 +60,26 @@
         }
         .error-msg { color: var(--point); font-size: .82rem; margin-bottom: 14px; min-height: 20px; }
         .btn-primary {
-            width: 100%; padding: 14px; background: linear-gradient(135deg, var(--point) 0%, var(--point-dim) 100%);
-            color: #fff; border: none; border-radius: 10px; font-weight: 700; cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%; padding: 14px; background: var(--point);
+            color: var(--text-dark); border: 1px solid var(--point); border-radius: 4px; font-weight: 800; cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
         }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(233, 69, 96, 0.4); }
+        .btn-primary:hover { transform: translateY(-2px); background: #e5c750; }
 
         /* ══════════════════════════════
            HEADER
         ══════════════════════════════ */
-        header { background: rgba(22, 33, 62, 0.85); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+        header { background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
         .header-inner { max-width: 1200px; margin: 0 auto; height: 64px; display: flex; align-items: center; justify-content: flex-start; gap: 32px; padding: 0 24px; }
         .logo { display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: 900; cursor: pointer; }
         .logo span.dot { width: 8px; height: 8px; background: var(--point); border-radius: 50%; box-shadow: 0 0 8px var(--point); }
         .header-subtitle { font-size: .75rem; color: var(--muted); font-weight: 400; }
         .header-nav { display: flex; gap: 24px; }
         .header-nav button { background: none; border: none; color: var(--muted); font-family: inherit; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: color 0.2s; }
-        .header-nav button.active { color: #fff; }
-        .btn-logout { margin-left: auto; background: rgba(233, 69, 96, 0.12); color: var(--point); border-radius: 8px; padding: 7px 14px; cursor: pointer; border: 1px solid rgba(233, 69, 96, 0.2); font-size: 0.8rem; font-weight: 600; }
+        .header-nav button.active { color: var(--point); }
+        .header-nav button:hover { color: var(--point); }
+        .btn-logout { margin-left: auto; background: transparent; color: var(--text); border-radius: 4px; padding: 7px 14px; cursor: pointer; border: 1px solid var(--accent); font-size: 0.8rem; font-weight: 600; transition: border-color 0.2s, color 0.2s; }
+        .btn-logout:hover { border-color: var(--point); color: var(--point); }
 
         /* ══════════════════════════════
            PLANNER FORM & RESULT
@@ -87,20 +90,20 @@
         .form-row input, .form-row textarea { width: 100%; background: rgba(255, 255, 255, 0.05); border: 1.5px solid var(--border); border-radius: 8px; padding: 12px 16px; color: var(--text); outline: none; font-family: inherit; transition: border-color 0.2s; }
         .form-row input:focus, .form-row textarea:focus { border-color: var(--point); }
         .form-row textarea { min-height: 80px; resize: vertical; }
-        .btn-submit-plan { background: linear-gradient(135deg, var(--point) 0%, var(--point-dim) 100%); color: #fff; border: none; padding: 14px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 1rem; transition: transform 0.2s; }
-        .btn-submit-plan:hover { transform: translateY(-2px); }
+        .btn-submit-plan { background: var(--point); color: var(--text-dark); border: 1px solid var(--point); padding: 14px; border-radius: 4px; font-weight: 800; cursor: pointer; font-size: 1rem; transition: transform 0.2s, background 0.2s; }
+        .btn-submit-plan:hover { transform: translateY(-2px); background: #e5c750; }
         .btn-submit-plan:disabled { opacity: 0.6; cursor: not-allowed; }
 
         /* 🚀 결과창 가독성 최적화 최종본 */
         .planner-result { 
-            background: rgba(15, 52, 96, 0.5); border: 1px solid var(--accent); 
+            background: var(--card); border: 1px solid var(--accent); 
             border-radius: var(--radius); padding: 40px; display: none; 
             line-height: 1.85; color: var(--text); 
             word-break: keep-all; overflow-wrap: break-word; font-size: 0.98rem;
         }
         .planner-result h3 { color: #fff; margin-top: 36px; margin-bottom: 18px; border-left: 5px solid var(--point); padding-left: 15px; font-size: 1.35rem; font-weight: 900; }
         .planner-result h3:first-child { margin-top: 0; }
-        .planner-result strong { color: var(--point); font-weight: 800; background: rgba(233, 69, 96, 0.1); padding: 2px 6px; border-radius: 4px; }
+        .planner-result strong { color: var(--point); font-weight: 800; background: rgba(255, 222, 89, 0.1); padding: 2px 6px; border-radius: 4px; }
         .planner-result p { margin-bottom: 20px; }
         .planner-result ul, .planner-result ol { margin-bottom: 20px; padding-left: 24px; }
         .planner-result li { margin-bottom: 12px; }
@@ -126,13 +129,13 @@
         .chat-btn { 
             position: fixed; right: 24px; bottom: 24px; 
             padding: 0 20px; height: 56px; border-radius: 28px; 
-            background: var(--point); color: #fff; border: none; 
+            background: var(--point); color: var(--text-dark); border: 1px solid var(--point); 
             cursor: pointer; z-index: 900; display: flex; align-items: center; 
             gap: 10px; font-size: 1rem; font-weight: 800;
-            box-shadow: 0 8px 24px rgba(233,69,96,0.4); 
+            box-shadow: 0 8px 24px rgba(255, 222, 89, 0.2); 
             transition: transform 0.3s, background 0.3s;
         }
-        .chat-btn:hover { transform: scale(1.05) translateY(-2px); background: #f05370; }
+        .chat-btn:hover { transform: scale(1.05) translateY(-2px); background: #e5c750; }
         
         .chat-btn::before {
             content: ''; position: absolute; inset: 0; border-radius: 28px;
@@ -145,16 +148,16 @@
             100% { transform: scale(1.4); opacity: 0; }
         }
 
-        .chat-window { position: fixed; right: 24px; bottom: 90px; width: 420px; height: 600px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); z-index: 950; display: none; flex-direction: column; overflow: hidden; box-shadow: var(--shadow); border: 1.5px solid rgba(233, 69, 96, 0.2); }
+        .chat-window { position: fixed; right: 24px; bottom: 90px; width: 420px; height: 600px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); z-index: 950; display: none; flex-direction: column; overflow: hidden; box-shadow: var(--shadow); border: 1.5px solid rgba(255, 222, 89, 0.2); }
         .chat-window.open { display: flex; animation: slideUp 0.3s ease-out; }
         .chat-messages { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
         .chat-msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 0.95rem; white-space: pre-wrap; word-break: keep-all; overflow-wrap: break-word; line-height: 1.6; }
-        .chat-msg.user { align-self: flex-end; background: var(--point); color: #fff; border-bottom-right-radius: 2px; }
+        .chat-msg.user { align-self: flex-end; background: var(--point); color: var(--text-dark); border-bottom-right-radius: 2px; }
         .chat-msg.ai { align-self: flex-start; background: var(--card); border: 1px solid var(--border); border-bottom-left-radius: 2px; }
         .chat-input-area { padding: 12px; display: flex; gap: 8px; background: var(--card); border-top: 1px solid var(--border); }
         .chat-input-area textarea { flex: 1; height: 44px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 8px; resize: none; outline: none; font-family: inherit; font-size: 0.9rem; }
-        .chat-input-area button { background: var(--point); border: none; color: #fff; padding: 0 16px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
-        .chat-input-area button:hover { background: #f05370; }
+        .chat-input-area button { background: var(--point); border: none; color: var(--text-dark); padding: 0 16px; border-radius: var(--radius); cursor: pointer; font-weight: 800; transition: background 0.2s; }
+        .chat-input-area button:hover { background: #e5c750; }
     </style>
 </head>
 
@@ -200,7 +203,7 @@
                     <p style="color:var(--muted)">조쉬의 철학이 담긴 맞춤형 전략을 제안합니다</p>
                 </div>
                 <div class="planner-form">
-                    <div style="background: rgba(233, 69, 96, 0.1); border: 1px solid rgba(233, 69, 96, 0.3); padding: 18px; border-radius: 8px; font-size:0.92rem; border-left: 4px solid var(--point);">
+                    <div style="background: rgba(255, 222, 89, 0.1); border: 1px solid rgba(255, 222, 89, 0.3); padding: 18px; border-radius: 8px; font-size:0.92rem; border-left: 4px solid var(--point);">
                         💡 상황을 구체적으로 적을수록 훨씬 더 날카로운 맞춤형 피드백을 받을 수 있습니다.
                     </div>
                     <div class="form-row"><label>1. 계정 컨셉 및 주제</label><input type="text" id="pConcept" placeholder="예: 직장인을 위한 엑셀 꿀팁" /></div>
@@ -223,7 +226,7 @@
                     <p style="color:var(--muted)">조쉬가 직접 기획안을 점검해 드리는 듯한 정밀 리포트를 제공합니다</p>
                 </div>
                 <div class="planner-form">
-                    <div style="background: rgba(233, 69, 96, 0.1); border: 1px solid rgba(233, 69, 96, 0.3); padding: 18px; border-radius: 8px; font-size:0.92rem; border-left: 4px solid var(--point);">
+                    <div style="background: rgba(255, 222, 89, 0.1); border: 1px solid rgba(255, 222, 89, 0.3); padding: 18px; border-radius: 8px; font-size:0.92rem; border-left: 4px solid var(--point);">
                         💡 도입-전개-결말의 흐름이 논리적인지, 후킹이 강력한지 분석해 드립니다.
                     </div>
                     <div class="form-row"><label>1. 후킹 제목 (첫 문장)</label><input type="text" id="cHook" placeholder="사람들을 멈추게 할 강력한 한 문장" /></div>
