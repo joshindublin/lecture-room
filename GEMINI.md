@@ -1,4 +1,6 @@
-# Project Management Guidelines (MUST READ)
+# Project Management Guidelines (Lecture Room Project ONLY)
+
+> **주의:** 이 지침은 오직 `[유료-강의 VOD] 조쉬의 콘텐츠 마스터클래스` 프로젝트 폴더 내 작업에만 적용됩니다. '내 드라이브'의 다른 프로젝트에는 해당되지 않습니다.
 
 ## 1. 절대 경로 준수
 이 프로젝트의 진짜 소스 코드와 .git 저장소는 반드시 아래 경로에 있습니다. 

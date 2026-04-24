@@ -9,7 +9,7 @@ echo "# Last Deploy: $(date)" >> netlify.toml
 
 # 3. 깃 명령 실행
 git add .
-git commit -m "chore: automated deploy trigger $(date +'%Y-%m-%d %H:%M:%S')"
+git commit -m "chore: update naming and chatbot UI $(date +'%Y-%m-%d %H:%M:%S')"
 git push origin main
 
 echo "------------------------------------------------"
