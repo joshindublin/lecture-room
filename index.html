@@ -176,7 +176,7 @@
                 <div class="logo" onclick="showPage('dashboard')">My Lecture Room <span class="dot"></span> <span class="header-subtitle">조쉬의 콘텐츠 마스터클래스</span></div>
                 <nav class="header-nav">
                     <button id="nav-dashboard" class="active" onclick="showPage('dashboard')">📚 강의 목록</button>
-                    <button id="nav-planner" onclick="showPage('planner')">🎯 기획 도우미</button>
+                    <button id="nav-planner" onclick="showPage('planner')">💌 계정 방향성 분석</button>
                 </nav>
                 <button class="btn-logout" onclick="logout()">🚪 나가기</button>
             </div>
@@ -195,7 +195,7 @@
         <div id="page-planner" class="page">
             <div class="page-wrapper">
                 <div style="margin-bottom:32px">
-                    <h2 style="font-size:2rem; font-weight:900">🎯 AI 콘텐츠 <em>기획 도우미</em></h2>
+                    <h2 style="font-size:2rem; font-weight:900">💌 맞춤형 <em>계정 방향성 분석</em></h2>
                     <p style="color:var(--muted)">조쉬의 철학이 담긴 맞춤형 전략을 제안합니다</p>
                 </div>
                 <div class="planner-form">
@@ -209,7 +209,7 @@
                     <div class="form-row"><label>5. 판매 상품의 형태 및 가격대</label><input type="text" id="pPrice" placeholder="예: 3만원대 VOD" /></div>
                     <div class="form-row"><label>6. 벤치마킹 하고 싶은 스타일 (선택)</label><input type="text" id="pBenchmark" placeholder="예: 유머러스한 썰풀이 방식" /></div>
                     <div class="form-row"><label>7. 기타 추가로 하고 싶은 말 (선택)</label><textarea id="pOthers" placeholder="기타 제약사항이나 궁금한 점을 적어주세요"></textarea></div>
-                    <button class="btn-submit-plan" id="btnSubmitPlan" onclick="generatePlan()">맞춤 기획안 생성하기 ✨</button>
+                    <button class="btn-submit-plan" id="btnSubmitPlan" onclick="generatePlan()">맞춤 맞춤 방향성 분석 시작하기 ✨</button>
                 </div>
                 <div id="plannerResult" class="planner-result"></div>
             </div>
