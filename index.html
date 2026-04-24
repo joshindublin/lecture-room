@@ -26,7 +26,7 @@
             --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
         }
         html { scroll-behavior: smooth; }
-        body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }
+        body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.7; }
 
         /* ── Scrollbar ── */
         ::-webkit-scrollbar { width: 6px; }
@@ -94,7 +94,7 @@
         /* 🚀 결과창 가독성 최적화 최종본 */
         .planner-result { 
             background: rgba(15, 52, 96, 0.5); border: 1px solid var(--accent); 
-            border-radius: var(--radius); padding: 32px; display: none; 
+            border-radius: var(--radius); padding: 40px; display: none; 
             line-height: 1.85; color: var(--text); 
             word-break: keep-all; overflow-wrap: break-word; font-size: 0.98rem;
         }
@@ -121,22 +121,44 @@
         .card-footer { padding: 12px 20px; border-top: 1px solid var(--border); color: var(--point); font-size: 0.85rem; font-weight: 700; }
 
         /* ══════════════════════════════
-           CHATBOT
+           CHATBOT (MODERNIZED)
         ══════════════════════════════ */
-        .chat-btn { position: fixed; right: 24px; bottom: 24px; width: 56px; height: 56px; border-radius: 50%; background: var(--point); border: none; cursor: pointer; z-index: 900; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 4px 16px rgba(233,69,96,0.4); }
-        .chat-window { position: fixed; right: 24px; bottom: 90px; width: 420px; height: 600px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); z-index: 950; display: none; flex-direction: column; overflow: hidden; box-shadow: var(--shadow); }
-        .chat-window.open { display: flex; }
+        .chat-btn { 
+            position: fixed; right: 24px; bottom: 24px; 
+            padding: 0 20px; height: 56px; border-radius: 28px; 
+            background: var(--point); color: #fff; border: none; 
+            cursor: pointer; z-index: 900; display: flex; align-items: center; 
+            gap: 10px; font-size: 1rem; font-weight: 800;
+            box-shadow: 0 8px 24px rgba(233,69,96,0.4); 
+            transition: transform 0.3s, background 0.3s;
+        }
+        .chat-btn:hover { transform: scale(1.05) translateY(-2px); background: #f05370; }
+        
+        .chat-btn::before {
+            content: ''; position: absolute; inset: 0; border-radius: 28px;
+            background: var(--point); z-index: -1; opacity: 0.5;
+            animation: pulse-ring 2s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(1); opacity: 0.5; }
+            100% { transform: scale(1.4); opacity: 0; }
+        }
+
+        .chat-window { position: fixed; right: 24px; bottom: 90px; width: 420px; height: 600px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); z-index: 950; display: none; flex-direction: column; overflow: hidden; box-shadow: var(--shadow); border: 1.5px solid rgba(233, 69, 96, 0.2); }
+        .chat-window.open { display: flex; animation: slideUp 0.3s ease-out; }
         .chat-messages { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
-        .chat-msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 0.95rem; white-space: pre-wrap; word-break: keep-all; overflow-wrap: break-word; }
+        .chat-msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 0.95rem; white-space: pre-wrap; word-break: keep-all; overflow-wrap: break-word; line-height: 1.6; }
         .chat-msg.user { align-self: flex-end; background: var(--point); color: #fff; border-bottom-right-radius: 2px; }
         .chat-msg.ai { align-self: flex-start; background: var(--card); border: 1px solid var(--border); border-bottom-left-radius: 2px; }
         .chat-input-area { padding: 12px; display: flex; gap: 8px; background: var(--card); border-top: 1px solid var(--border); }
-        .chat-input-area textarea { flex: 1; height: 44px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 8px; resize: none; outline: none; font-family: inherit; }
+        .chat-input-area textarea { flex: 1; height: 44px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 8px; resize: none; outline: none; font-family: inherit; font-size: 0.9rem; }
+        .chat-input-area button { background: var(--point); border: none; color: #fff; padding: 0 16px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+        .chat-input-area button:hover { background: #f05370; }
     </style>
 </head>
 
 <body>
-    <!-- ══════════════════ LOCK SCREEN ══════════════════ -->
     <div id="lockScreen">
         <div class="lock-box">
             <div class="lock-icon">🔐</div>
@@ -148,7 +170,6 @@
         </div>
     </div>
 
-    <!-- ══════════════════ MAIN APP ══════════════════ -->
     <div id="app" style="display:none">
         <header>
             <div class="header-inner">
@@ -204,18 +225,19 @@
             </div>
         </div>
 
-        <button class="chat-btn" onclick="toggleChat()">💬</button>
+        <button class="chat-btn" onclick="toggleChat()">💬 질문하기</button>
+        
         <div id="chatWindow" class="chat-window">
-            <div style="padding:16px; background:var(--card); font-weight:bold; border-bottom:1px solid var(--border); display:flex; justify-content:space-between;">
-                <span>🤖 AI 조교</span>
-                <span style="cursor:pointer; opacity:0.6" onclick="toggleChat()">✕</span>
+            <div style="padding:16px; background:var(--card); font-weight:bold; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:1.05rem">👨‍🏫 조쉬의 AI 수석 조교</span>
+                <span style="cursor:pointer; opacity:0.6; font-size:1.4rem;" onclick="toggleChat()">✕</span>
             </div>
             <div id="chatMessages" class="chat-messages">
-                <div class="chat-msg ai">안녕하세요! 강의 관련 궁금한 점을 물어보세요 😊</div>
+                <div class="chat-msg ai">안녕하세요! SNS, 콘텐츠, 강의 관련 궁금한 점을 물어보세요😊 조쉬의 콘텐츠 철학을 바탕으로 상세한 답변을 드릴게요 :)</div>
             </div>
             <div class="chat-input-area">
-                <textarea id="chatInput" placeholder="질문하세요..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"></textarea>
-                <button onclick="sendChatMessage()" style="background:var(--point); border:none; color:#fff; padding:0 15px; border-radius:8px; cursor:pointer; font-weight:bold">Send</button>
+                <textarea id="chatInput" placeholder="질문 내용을 입력하세요..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"></textarea>
+                <button onclick="sendChatMessage()">전송</button>
             </div>
         </div>
     </div>
@@ -241,6 +263,8 @@
             { id: 17, title: "17강. 실제 매출을 키워주는 전략", driveFileId: "1Ffl4rEpTPC783JWaQ355yzuS7ewFpRYQ" }
         ]};
 
+        marked.setOptions({ breaks: true, gfm: true });
+
         function attemptUnlock() {
             if (document.getElementById('codeInput').value.trim() === CONFIG.ACCESS_CODE) {
                 sessionStorage.setItem('lrAuth', 'true');
@@ -264,7 +288,6 @@
         }
 
         function renderDashboard() {
-            updateProgressBar();
             document.getElementById('lectureGrid').innerHTML = CONFIG.lectures.map(l => `
                 <div class="lecture-card" onclick="playLecture(${l.id})">
                     <div class="card-thumbnail">Lec ${l.id}</div>
@@ -281,10 +304,6 @@
             document.getElementById('videoTitle').textContent = l.title;
             document.getElementById('videoFrame').src = `https://drive.google.com/file/d/${l.driveFileId}/preview`;
             showPage('video');
-        }
-
-        function updateProgressBar() {
-            // Placeholder for progress logic if needed
         }
 
         async function getKB() { try { const r = await fetch('/knowledge-base.md'); return r.ok ? await r.text() : ""; } catch(e) {return "";} }
@@ -318,7 +337,7 @@
         async function generatePlan() {
             const btn = document.getElementById('btnSubmitPlan');
             const result = document.getElementById('plannerResult');
-            btn.disabled = true; result.style.display = 'block'; result.innerHTML = "<p style='text-align:center; padding:20px;'>조쉬의 철학으로 분석 중... ⏳</p>";
+            btn.disabled = true; result.style.display = 'block'; result.innerHTML = "<p style='text-align:center; padding:30px;'>조쉬의 철학으로 정밀 분석 중... ⏳</p>";
             try {
                 const body = {
                     concept: document.getElementById('pConcept').value,
@@ -341,7 +360,7 @@
                     full += decoder.decode(value);
                     result.innerHTML = marked.parse(full);
                 }
-            } catch(e) { result.innerHTML = "<p style='color:var(--point)'>오류 발생: " + e.message + "</p>"; }
+            } catch(e) { result.innerHTML = "<p style='color:var(--point); padding:20px;'>오류 발생: " + e.message + "</p>"; }
             finally { btn.disabled = false; btn.textContent = "맞춤 기획안 다시 생성하기 ✨"; }
         }
 
