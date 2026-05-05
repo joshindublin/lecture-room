@@ -71,15 +71,35 @@
         ══════════════════════════════ */
         header { background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
         .header-inner { max-width: 1200px; margin: 0 auto; height: 64px; display: flex; align-items: center; justify-content: flex-start; gap: 32px; padding: 0 24px; }
-        .logo { display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: 900; cursor: pointer; }
-        .logo span.dot { width: 8px; height: 8px; background: var(--point); border-radius: 50%; box-shadow: 0 0 8px var(--point); }
+        .logo { display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: 900; cursor: pointer; white-space: nowrap; }
+        .logo span.dot { width: 8px; height: 8px; background: var(--point); border-radius: 50%; box-shadow: 0 0 8px var(--point); flex-shrink: 0; }
         .header-subtitle { font-size: .75rem; color: var(--muted); font-weight: 400; }
         .header-nav { display: flex; gap: 24px; }
-        .header-nav button { background: none; border: none; color: var(--muted); font-family: inherit; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: color 0.2s; }
+        .header-nav button { background: none; border: none; color: var(--muted); font-family: inherit; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: color 0.2s; white-space: nowrap; }
         .header-nav button.active { color: var(--point); }
         .header-nav button:hover { color: var(--point); }
-        .btn-logout { margin-left: auto; background: transparent; color: var(--text); border-radius: 4px; padding: 7px 14px; cursor: pointer; border: 1px solid var(--accent); font-size: 0.8rem; font-weight: 600; transition: border-color 0.2s, color 0.2s; }
+        .btn-logout { margin-left: auto; background: transparent; color: var(--text); border-radius: 4px; padding: 7px 14px; cursor: pointer; border: 1px solid var(--accent); font-size: 0.8rem; font-weight: 600; transition: border-color 0.2s, color 0.2s; white-space: nowrap; flex-shrink: 0; }
         .btn-logout:hover { border-color: var(--point); color: var(--point); }
+        /* 햄버거 버튼 */
+        .hamburger { display: none; flex-direction: column; justify-content: center; gap: 5px; background: none; border: none; cursor: pointer; padding: 4px; margin-left: auto; flex-shrink: 0; }
+        .hamburger span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; transition: all 0.3s; }
+        .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+        .hamburger.open span:nth-child(2) { opacity: 0; }
+        .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+        /* 모바일 드롭다운 메뉴 */
+        .mobile-menu { display: none; position: absolute; top: 64px; left: 0; right: 0; background: rgba(10,10,20,0.97); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); z-index: 99; padding: 8px 0; }
+        .mobile-menu.open { display: block; }
+        .mobile-menu button, .mobile-menu .mobile-logout { display: block; width: 100%; background: none; border: none; color: var(--muted); font-family: inherit; font-size: 1rem; font-weight: 600; cursor: pointer; text-align: left; padding: 14px 24px; transition: color 0.2s, background 0.2s; }
+        .mobile-menu button.active { color: var(--point); }
+        .mobile-menu button:hover, .mobile-menu .mobile-logout:hover { color: var(--point); background: rgba(255,255,255,0.04); }
+        .mobile-menu .mobile-logout { color: var(--muted); border-top: 1px solid var(--border); margin-top: 4px; }
+        @media (max-width: 768px) {
+            .header-inner { gap: 0; }
+            .header-subtitle { display: none; }
+            .header-nav { display: none; }
+            .btn-logout { display: none; }
+            .hamburger { display: flex; }
+        }
 
         /* ══════════════════════════════
            PLANNER FORM & RESULT
@@ -174,7 +194,7 @@
     </div>
 
     <div id="app" style="display:none">
-        <header>
+        <header style="position:sticky;top:0;z-index:100;">
             <div class="header-inner">
                 <div class="logo" onclick="showPage('dashboard')">My Lecture Room <span class="dot"></span> <span class="header-subtitle">조쉬의 콘텐츠 마스터클래스</span></div>
                 <nav class="header-nav">
@@ -183,6 +203,15 @@
                     <button id="nav-checker" onclick="showPage('checker')">🔍 릴스 기획 점검</button>
                 </nav>
                 <button class="btn-logout" onclick="logout()">🚪 나가기</button>
+                <button class="hamburger" id="hamburgerBtn" onclick="toggleMobileMenu()" aria-label="메뉴">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+            <div class="mobile-menu" id="mobileMenu">
+                <button id="mnav-dashboard" class="active" onclick="showPage('dashboard');closeMobileMenu()">📚 강의 목록</button>
+                <button id="mnav-planner" onclick="showPage('planner');closeMobileMenu()">💌 계정 방향성 분석</button>
+                <button id="mnav-checker" onclick="showPage('checker');closeMobileMenu()">🔍 릴스 기획 점검</button>
+                <button class="mobile-logout" onclick="logout()">🚪 나가기</button>
             </div>
         </header>
 
@@ -302,11 +331,27 @@
 
         function logout() { sessionStorage.clear(); location.reload(); }
 
+        function toggleMobileMenu() {
+            const btn = document.getElementById('hamburgerBtn');
+            const menu = document.getElementById('mobileMenu');
+            btn.classList.toggle('open');
+            menu.classList.toggle('open');
+        }
+
+        function closeMobileMenu() {
+            document.getElementById('hamburgerBtn').classList.remove('open');
+            document.getElementById('mobileMenu').classList.remove('open');
+        }
+
         function showPage(name) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById('page-' + name).classList.add('active');
+            // 데스크톱 nav active
             document.querySelectorAll('.header-nav button').forEach(b => b.classList.remove('active'));
             if(document.getElementById('nav-'+name)) document.getElementById('nav-'+name).classList.add('active');
+            // 모바일 nav active
+            document.querySelectorAll('.mobile-menu button').forEach(b => b.classList.remove('active'));
+            if(document.getElementById('mnav-'+name)) document.getElementById('mnav-'+name).classList.add('active');
             window.scrollTo(0,0);
             if(name !== 'video') document.getElementById('videoFrame').src = '';
         }
