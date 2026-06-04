@@ -289,7 +289,7 @@
                 <div class="chat-msg ai">안녕하세요! SNS, 콘텐츠, 강의 관련 궁금한 점을 물어보세요😊 조쉬의 콘텐츠 철학을 바탕으로 상세한 답변을 드릴게요 :)</div>
             </div>
             <div class="chat-input-area">
-                <textarea id="chatInput" placeholder="질문 내용을 입력하세요..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"></textarea>
+                <textarea id="chatInput" placeholder="질문 내용을 입력하세요..." onkeydown="if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();sendChatMessage();}"></textarea>
                 <button onclick="sendChatMessage()">전송</button>
             </div>
         </div>
@@ -377,6 +377,9 @@
 
         async function getKB() { try { const r = await fetch('/knowledge-base.md'); return r.ok ? await r.text() : ""; } catch(e) {return "";} }
 
+        // 대화 히스토리 (페이지 내 유지)
+        let _chatHistory = [];
+
         async function sendChatMessage() {
             const input = document.getElementById('chatInput');
             const text = input.value.trim(); if(!text) return;
@@ -385,22 +388,34 @@
             msgBox.innerHTML += `<div class="chat-msg user">${text}</div>`;
             const aiEl = document.createElement('div'); aiEl.className = 'chat-msg ai';
             msgBox.appendChild(aiEl); msgBox.scrollTop = msgBox.scrollHeight;
-            
+
+            // 히스토리에 유저 메시지 추가
+            _chatHistory.push({ role: 'user', content: text });
+
             try {
                 const kb = await getKB();
                 const res = await fetch('/.netlify/functions/chat', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ messages: [{role:'user', content:text}], knowledgeBase: kb })
+                    body: JSON.stringify({ messages: _chatHistory, knowledgeBase: kb })
                 });
                 const reader = res.body.getReader();
                 const decoder = new TextDecoder();
+                let fullAnswer = '';
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
-                    aiEl.textContent += decoder.decode(value);
+                    const chunk = decoder.decode(value);
+                    fullAnswer += chunk;
+                    aiEl.textContent = fullAnswer;
                     msgBox.scrollTop = msgBox.scrollHeight;
                 }
-            } catch(e) { aiEl.textContent = "오류 발생: " + e.message; }
+                // 히스토리에 AI 답변 추가
+                _chatHistory.push({ role: 'model', content: fullAnswer });
+            } catch(e) {
+                aiEl.textContent = "오류 발생: " + e.message;
+                // 실패 시 마지막 유저 메시지 롤백
+                _chatHistory.pop();
+            }
         }
 
         async function generatePlan() {
