@@ -135,13 +135,15 @@
         .page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .page-wrapper { max-width: 1200px; margin: 0 auto; padding: 40px 24px 80px; }
-        .lectures-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
-        .lecture-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; overflow: hidden; transition: transform 0.3s, border-color 0.3s; }
-        .lecture-card:hover { transform: translateY(-6px); border-color: var(--point); }
-        .card-thumbnail { aspect-ratio: 16/9; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--point); font-size: 1.2rem; }
-        .card-body { padding: 20px; }
-        .card-title { font-weight: 700; margin-bottom: 8px; font-size: 1.05rem; }
-        .card-footer { padding: 12px 20px; border-top: 1px solid var(--border); color: var(--point); font-size: 0.85rem; font-weight: 700; }
+        .lectures-grid { display: flex; flex-direction: column; gap: 6px; max-width: 700px; margin: 0 auto; }
+        .lecture-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 16px; padding: 16px 20px; transition: background 0.2s, border-color 0.2s; }
+        .lecture-card:hover { background: var(--accent); border-color: var(--point); }
+        .card-num { width: 36px; height: 36px; border-radius: 8px; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--point); font-size: 0.85rem; flex-shrink: 0; }
+        .lecture-card:hover .card-num { background: rgba(233,69,96,0.15); }
+        .card-body { flex: 1; padding: 0; }
+        .card-title { font-weight: 600; font-size: 0.95rem; color: var(--text); }
+        .card-play { color: var(--muted); font-size: 1.2rem; flex-shrink: 0; transition: color 0.2s; }
+        .lecture-card:hover .card-play { color: var(--point); }
 
         /* ══════════════════════════════
            CHATBOT (MODERNIZED)
@@ -360,11 +362,11 @@
         function renderDashboard() {
             document.getElementById('lectureGrid').innerHTML = CONFIG.lectures.map(l => `
                 <div class="lecture-card" onclick="playLecture(${l.id})">
-                    <div class="card-thumbnail">Lec ${l.id}</div>
+                    <div class="card-num">${l.id}</div>
                     <div class="card-body">
                         <div class="card-title">${l.title}</div>
                     </div>
-                    <div class="card-footer">▶ 강의 시청하기</div>
+                    <div class="card-play">▶</div>
                 </div>
             `).join('');
         }
