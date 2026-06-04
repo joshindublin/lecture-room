@@ -281,13 +281,14 @@
         <button class="chat-btn" onclick="toggleChat()">💬 질문하기</button>
         
         <div id="chatWindow" class="chat-window">
-            <div style="padding:16px; background:var(--card); font-weight:bold; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+            <div style="padding:14px 16px; background:var(--card); font-weight:bold; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
                 <span style="font-size:1.05rem">👨‍🏫 조쉬의 AI 수석 조교</span>
-                <span style="cursor:pointer; opacity:0.6; font-size:1.4rem;" onclick="toggleChat()">✕</span>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <button onclick="clearChatHistory()" style="background:none; border:none; color:var(--muted); font-size:0.75rem; cursor:pointer; padding:4px 8px; border-radius:4px; border:1px solid var(--border); transition:color 0.2s;" onmouseover="this.style.color='var(--point)'" onmouseout="this.style.color='var(--muted)'">대화 초기화</button>
+                    <span style="cursor:pointer; opacity:0.6; font-size:1.4rem;" onclick="toggleChat()">✕</span>
+                </div>
             </div>
-            <div id="chatMessages" class="chat-messages">
-                <div class="chat-msg ai">안녕하세요! SNS, 콘텐츠, 강의 관련 궁금한 점을 물어보세요😊 조쉬의 콘텐츠 철학을 바탕으로 상세한 답변을 드릴게요 :)</div>
-            </div>
+            <div id="chatMessages" class="chat-messages"></div>
             <div class="chat-input-area">
                 <textarea id="chatInput" placeholder="질문 내용을 입력하세요..." onkeydown="if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();sendChatMessage();}"></textarea>
                 <button onclick="sendChatMessage()">전송</button>
@@ -377,19 +378,62 @@
 
         async function getKB() { try { const r = await fetch('/knowledge-base.md'); return r.ok ? await r.text() : ""; } catch(e) {return "";} }
 
-        // 대화 히스토리 (페이지 내 유지)
+        // ── 대화 히스토리 (localStorage 영구 저장) ──
+        const CHAT_STORAGE_KEY = 'josh_chat_history';
         let _chatHistory = [];
+
+        function saveChatHistory() {
+            localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(_chatHistory));
+        }
+
+        function loadChatHistory() {
+            try {
+                const saved = localStorage.getItem(CHAT_STORAGE_KEY);
+                _chatHistory = saved ? JSON.parse(saved) : [];
+            } catch(e) { _chatHistory = []; }
+        }
+
+        function renderChatHistory() {
+            const msgBox = document.getElementById('chatMessages');
+            msgBox.innerHTML = '';
+            if (_chatHistory.length === 0) {
+                msgBox.innerHTML = '<div class="chat-msg ai">안녕하세요! SNS, 콘텐츠, 강의 관련 궁금한 점을 물어보세요😊 조쉬의 콘텐츠 철학을 바탕으로 상세한 답변을 드릴게요 :)</div>';
+                return;
+            }
+            _chatHistory.forEach(msg => {
+                const el = document.createElement('div');
+                el.className = 'chat-msg ' + (msg.role === 'user' ? 'user' : 'ai');
+                el.textContent = msg.content;
+                msgBox.appendChild(el);
+            });
+            msgBox.scrollTop = msgBox.scrollHeight;
+        }
+
+        function clearChatHistory() {
+            if (!confirm('대화 내용을 모두 삭제할까요?')) return;
+            _chatHistory = [];
+            localStorage.removeItem(CHAT_STORAGE_KEY);
+            renderChatHistory();
+        }
+
+        // 페이지 로드 시 히스토리 복원
+        loadChatHistory();
+        renderChatHistory();
 
         async function sendChatMessage() {
             const input = document.getElementById('chatInput');
             const text = input.value.trim(); if(!text) return;
             input.value = '';
             const msgBox = document.getElementById('chatMessages');
-            msgBox.innerHTML += `<div class="chat-msg user">${text}</div>`;
+
+            const userEl = document.createElement('div');
+            userEl.className = 'chat-msg user';
+            userEl.textContent = text;
+            msgBox.appendChild(userEl);
+
             const aiEl = document.createElement('div'); aiEl.className = 'chat-msg ai';
             msgBox.appendChild(aiEl); msgBox.scrollTop = msgBox.scrollHeight;
 
-            // 히스토리에 유저 메시지 추가
             _chatHistory.push({ role: 'user', content: text });
 
             try {
@@ -404,16 +448,14 @@
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
-                    const chunk = decoder.decode(value);
-                    fullAnswer += chunk;
+                    fullAnswer += decoder.decode(value);
                     aiEl.textContent = fullAnswer;
                     msgBox.scrollTop = msgBox.scrollHeight;
                 }
-                // 히스토리에 AI 답변 추가
                 _chatHistory.push({ role: 'model', content: fullAnswer });
+                saveChatHistory();
             } catch(e) {
                 aiEl.textContent = "오류 발생: " + e.message;
-                // 실패 시 마지막 유저 메시지 롤백
                 _chatHistory.pop();
             }
         }
