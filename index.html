@@ -440,7 +440,7 @@
 
             try {
                 const kb = await getKB();
-                const res = await fetch('/.netlify/functions/chat', {
+                const res = await fetch('/api/chat', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ messages: _chatHistory, knowledgeBase: kb })
                 });
@@ -477,7 +477,7 @@
                     others: document.getElementById('pOthers').value,
                     knowledgeBase: await getKB()
                 };
-                const res = await fetch('/.netlify/functions/planner', { method: 'POST', body: JSON.stringify(body) });
+                const res = await fetch('/api/planner', { method: 'POST', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } });
                 const reader = res.body.getReader();
                 const decoder = new TextDecoder();
                 result.innerHTML = "";
@@ -504,7 +504,7 @@
                     focus: document.getElementById('cFocus').value,
                     knowledgeBase: await getKB()
                 };
-                const res = await fetch('/.netlify/functions/reels-check', { method: 'POST', body: JSON.stringify(body) });
+                const res = await fetch('/api/reels-check', { method: 'POST', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } });
                 const reader = res.body.getReader();
                 const decoder = new TextDecoder();
                 result.innerHTML = "";
