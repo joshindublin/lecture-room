@@ -180,6 +180,50 @@
         .chat-input-area textarea { flex: 1; height: 44px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 8px; resize: none; outline: none; font-family: inherit; font-size: 0.9rem; }
         .chat-input-area button { background: var(--point); border: none; color: var(--text-dark); padding: 0 16px; border-radius: var(--radius); cursor: pointer; font-weight: 800; transition: background 0.2s; }
         .chat-input-area button:hover { background: #e5c750; }
+
+        @media (max-width: 768px) {
+            .chat-btn {
+                right: 16px;
+                bottom: max(16px, env(safe-area-inset-bottom));
+                height: 52px;
+                padding: 0 18px;
+            }
+
+            .chat-window {
+                top: 64px;
+                right: 0;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: calc(100vh - 64px);
+                height: calc(100dvh - 64px);
+                border-right: 0;
+                border-bottom: 0;
+                border-left: 0;
+                border-radius: 0;
+                box-shadow: none;
+            }
+
+            .chat-messages {
+                min-height: 0;
+                padding: 12px;
+                overscroll-behavior: contain;
+            }
+
+            .chat-msg {
+                max-width: 92%;
+                font-size: 0.9rem;
+                line-height: 1.55;
+            }
+
+            .chat-input-area {
+                padding: 10px 12px max(10px, env(safe-area-inset-bottom));
+            }
+
+            .chat-input-area textarea {
+                min-width: 0;
+            }
+        }
     </style>
 </head>
 
