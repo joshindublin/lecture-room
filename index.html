@@ -378,8 +378,6 @@
             showPage('video');
         }
 
-        async function getKB() { try { const r = await fetch('/knowledge-base.md'); return r.ok ? await r.text() : ""; } catch(e) {return "";} }
-
         // ── 대화 히스토리 (localStorage 영구 저장) ──
         const CHAT_STORAGE_KEY = 'josh_chat_history';
         let _chatHistory = [];
@@ -439,10 +437,9 @@
             _chatHistory.push({ role: 'user', content: text });
 
             try {
-                const kb = await getKB();
                 const res = await fetch('/api/chat', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ messages: _chatHistory, knowledgeBase: kb })
+                    body: JSON.stringify({ messages: _chatHistory })
                 });
                 const reader = res.body.getReader();
                 const decoder = new TextDecoder();
@@ -474,8 +471,7 @@
                     purpose: document.getElementById('pPurpose').value,
                     price: document.getElementById('pPrice').value,
                     benchmark: document.getElementById('pBenchmark').value,
-                    others: document.getElementById('pOthers').value,
-                    knowledgeBase: await getKB()
+                    others: document.getElementById('pOthers').value
                 };
                 const res = await fetch('/api/planner', { method: 'POST', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } });
                 const reader = res.body.getReader();
@@ -501,8 +497,7 @@
                     hook: document.getElementById('cHook').value,
                     script: document.getElementById('cScript').value,
                     caption: document.getElementById('cCaption').value,
-                    focus: document.getElementById('cFocus').value,
-                    knowledgeBase: await getKB()
+                    focus: document.getElementById('cFocus').value
                 };
                 const res = await fetch('/api/reels-check', { method: 'POST', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } });
                 const reader = res.body.getReader();
