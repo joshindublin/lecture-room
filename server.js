@@ -22,8 +22,35 @@ function createModel(systemInstruction) {
 
 async function streamText(result, res) {
     res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    let pendingAsterisks = 0;
+
     for await (const chunk of result.stream) {
-        res.write(chunk.text());
+        let output = "";
+
+        // Gemini가 출력 규칙을 어기고 볼드 마크다운을 반환해도
+        // 스트리밍 청크 경계와 무관하게 연속된 별표 묶음을 제거한다.
+        // 목록에 사용하는 단독 * 기호는 그대로 보존한다.
+        for (const character of chunk.text()) {
+            if (character === "*") {
+                pendingAsterisks += 1;
+                continue;
+            }
+
+            if (pendingAsterisks === 1) {
+                output += "*";
+            }
+
+            pendingAsterisks = 0;
+            output += character;
+        }
+
+        if (output) {
+            res.write(output);
+        }
+    }
+
+    if (pendingAsterisks === 1) {
+        res.write("*");
     }
     res.end();
 }
