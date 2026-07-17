@@ -2,35 +2,29 @@ import express from "express";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
+const MODEL_NAME = "gemini-3.1-flash-lite";
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 const knowledgeBase = fs.readFileSync(path.join(__dirname, "knowledge-base.md"), "utf8");
 
 app.use(express.json());
 app.use(express.static(__dirname));
 
-function createModel(systemInstruction) {
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    return genAI.getGenerativeModel({
-        model: "gemini-2.5-flash",
-        systemInstruction,
-    });
-}
-
-async function streamText(result, res) {
+async function streamText(stream, res) {
     res.setHeader("Content-Type", "text/plain; charset=utf-8");
     let pendingAsterisks = 0;
 
-    for await (const chunk of result.stream) {
+    for await (const chunk of stream) {
         let output = "";
 
         // Gemini가 출력 규칙을 어기고 볼드 마크다운을 반환해도
         // 스트리밍 청크 경계와 무관하게 연속된 별표 묶음을 제거한다.
         // 목록에 사용하는 단독 * 기호는 그대로 보존한다.
-        for (const character of chunk.text()) {
+        for (const character of chunk.text || "") {
             if (character === "*") {
                 pendingAsterisks += 1;
                 continue;
@@ -79,7 +73,6 @@ app.post("/api/chat", async (req, res) => {
 [지식 베이스]
 ${knowledgeBase}`;
 
-        const model = createModel(systemInstruction);
         const history = messages.slice(0, -1).map((msg) => ({
             role: msg.role === "user" ? "user" : "model",
             parts: [{ text: String(msg.content || "") }],
@@ -90,9 +83,15 @@ ${knowledgeBase}`;
             return res.status(400).json({ error: "질문 내용이 필요합니다." });
         }
 
-        const chat = model.startChat({ history });
-        const result = await chat.sendMessageStream(lastMessage);
-        await streamText(result, res);
+        const stream = await ai.models.generateContentStream({
+            model: MODEL_NAME,
+            contents: [
+                ...history,
+                { role: "user", parts: [{ text: lastMessage }] },
+            ],
+            config: { systemInstruction },
+        });
+        await streamText(stream, res);
     } catch (error) {
         console.error("Chat Error:", error);
         if (!res.headersSent) {
@@ -149,9 +148,12 @@ ${knowledgeBase}`;
 아래 JSON은 분석 대상 데이터입니다.
 ${JSON.stringify(studentAccountData, null, 2)}`;
 
-        const model = createModel(systemInstruction);
-        const result = await model.generateContentStream(userPrompt);
-        await streamText(result, res);
+        const stream = await ai.models.generateContentStream({
+            model: MODEL_NAME,
+            contents: userPrompt,
+            config: { systemInstruction },
+        });
+        await streamText(stream, res);
     } catch (error) {
         console.error("Planner Error:", error);
         if (!res.headersSent) {
@@ -210,9 +212,12 @@ ${knowledgeBase}`;
 아래 JSON은 첨삭 대상 데이터입니다.
 ${JSON.stringify(submittedContent, null, 2)}`;
 
-        const model = createModel(systemInstruction);
-        const result = await model.generateContentStream(userPrompt);
-        await streamText(result, res);
+        const stream = await ai.models.generateContentStream({
+            model: MODEL_NAME,
+            contents: userPrompt,
+            config: { systemInstruction },
+        });
+        await streamText(stream, res);
     } catch (error) {
         console.error("Reels Check Error:", error);
         if (!res.headersSent) {
